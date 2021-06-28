@@ -1,0 +1,14 @@
+declare function cheatItems(): void;
+declare function cheatArms(): void;
+declare function cheatGold(): void;
+declare function cheatStuff(): void;
+declare function cheatParty(): void;
+declare function cheatSTR(value?: number): void;
+declare function cheatDEX(value?: number): void;
+declare function cheatCON(value?: number): void;
+declare function cheatINT(value?: number): void;
+declare function cheatWIS(value?: number): void;
+declare function cheatCHA(value?: number): void;
+declare function cheatStats(value?: number): void;
+declare function cheatNextLevel(): void;
+declare function cheatLevel2(): void;
