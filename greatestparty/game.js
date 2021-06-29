@@ -285,7 +285,6 @@ class Game {
             this.log('Congratulations, you have beaten the final level!');
             this.log('Thanks for playing!');
             this.running = false;
-            ui.show(); // TODO: Out of the ordinary to call this, but needed for next level cheat to show the messages.
         }
     }
     killPartyMembers(count) {
@@ -499,7 +498,6 @@ class Game {
         }
     }
     buyEquipment(equipmentType, name) {
-        // TODO: I don't like the argument names.
         const { townInventory, townInventoryBuy, partyInventory } = (() => {
             switch (equipmentType) {
                 case 'weapon': return {
@@ -522,7 +520,6 @@ class Game {
         this.calculateEquipment();
     }
     sellEquipment(equipmentType, name) {
-        // TODO: I don't like the argument names.
         const { townInventory, townInventorySell, partyInventory } = (() => {
             switch (equipmentType) {
                 case 'weapon': return {
@@ -626,9 +623,9 @@ class Game {
         // TIME KEEPING
         // ----------------------------------------------------
         this.tick += 1;
-        unwrapClock(this);
+        clockUnwrap(this);
         this.playtime.tick += 1;
-        unwrapClock(this.playtime);
+        clockUnwrap(this.playtime);
         this.calculateEquipment();
         // ----------------------------------------------------
         // ROUND ACTIONS
@@ -789,9 +786,6 @@ class Game {
         // ----------------------------------------------------
         if (this.town.townsfolk > 0 && this.town.needRatio > 0 && this.town.need < this.town.needMax) {
             if (rollRatio() < this.town.needRatio) {
-                if (FLAGS.LOG_NEW_NEED) {
-                    this.log('The town\'s need grows.');
-                }
                 this.town.need += 1;
             }
         }
@@ -820,18 +814,10 @@ class Game {
                 this.party.questPoints -= POINTS_PER_QUEST * questsCompleted;
                 this.adjustAlignment(questsCompleted);
             }
-            // If it was possible to complete additional quests
-            // this round, the quest points are abandoned since
-            // there is nothing left for the party to do.
-            // TODO: Does this overlap with what's in QWERRRERE?
-            if (this.party.questPoints >= POINTS_PER_QUEST) {
-                this.party.questPoints = this.party.questPoints % POINTS_PER_QUEST;
-            }
         }
         // If you run out of quests, then any progress toward
         // quests is abandoned since there is nothing left
         // for the party to do.
-        // TODO: Does this overlap with what's in QWERRRERE?
         if (this.party.quests <= 0) {
             this.party.questPoints = 0;
         }
@@ -847,7 +833,7 @@ class Game {
         // ----------------------------------------------------
         // TOWN EVENTS
         // ----------------------------------------------------
-        if (this.tick == 0 && this.tock % 5 == 0) { // TODO: tock % 5, what if tock max isn't multiple of 5?
+        if (this.tick == 0 && this.tock % TOCKS_PER_SEMITERM == 0) {
             const event = this.pickTownEvent();
             if (event != null) {
                 event.action(this);
@@ -918,26 +904,25 @@ class Game {
         }
         else {
             const physicalUse = Math.floor((Math.abs(weapon.physical) / weaponTotal) * weaponMax);
-            // TODO: Flip condition so they're in the usual order.
-            if (weapon.physical > 0) {
-                this.party.weapon.physical = Math.min(this.party.inventoryWeapon.slice, physicalUse);
-            }
-            else {
+            if (weapon.physical < 0) {
                 this.party.weapon.physical = -Math.min(this.party.inventoryWeapon.blunt, physicalUse);
             }
-            const magicalUse = Math.floor((Math.abs(weapon.magical) / weaponTotal) * weaponMax);
-            if (weapon.magical > 0) {
-                this.party.weapon.magical = Math.min(this.party.inventoryWeapon.light, magicalUse);
-            }
             else {
+                this.party.weapon.physical = Math.min(this.party.inventoryWeapon.slice, physicalUse);
+            }
+            const magicalUse = Math.floor((Math.abs(weapon.magical) / weaponTotal) * weaponMax);
+            if (weapon.magical < 0) {
                 this.party.weapon.magical = -Math.min(this.party.inventoryWeapon.dark, magicalUse);
             }
+            else {
+                this.party.weapon.magical = Math.min(this.party.inventoryWeapon.light, magicalUse);
+            }
             const elementalUse = Math.floor((Math.abs(weapon.elemental) / weaponTotal) * weaponMax);
-            if (weapon.elemental > 0) {
-                this.party.weapon.elemental = Math.min(this.party.inventoryWeapon.ice, elementalUse);
+            if (weapon.elemental < 0) {
+                this.party.weapon.elemental = -Math.min(this.party.inventoryWeapon.fire, elementalUse);
             }
             else {
-                this.party.weapon.elemental = -Math.min(this.party.inventoryWeapon.fire, elementalUse);
+                this.party.weapon.elemental = Math.min(this.party.inventoryWeapon.ice, elementalUse);
             }
         }
         if (armorTotal == 0) {
@@ -947,26 +932,25 @@ class Game {
         }
         else {
             const physicalUse = Math.floor((Math.abs(armor.physical) / armorTotal) * armorMax);
-            // TODO: Flip condition so they're in the usual order.
-            if (armor.physical > 0) {
-                this.party.armor.physical = Math.min(this.party.inventoryArmor.slice, physicalUse);
-            }
-            else {
+            if (armor.physical < 0) {
                 this.party.armor.physical = -Math.min(this.party.inventoryArmor.blunt, physicalUse);
             }
-            const magicalUse = Math.floor((Math.abs(armor.magical) / armorTotal) * armorMax);
-            if (armor.magical > 0) {
-                this.party.armor.magical = Math.min(this.party.inventoryArmor.light, magicalUse);
-            }
             else {
+                this.party.armor.physical = Math.min(this.party.inventoryArmor.slice, physicalUse);
+            }
+            const magicalUse = Math.floor((Math.abs(armor.magical) / armorTotal) * armorMax);
+            if (armor.magical < 0) {
                 this.party.armor.magical = -Math.min(this.party.inventoryArmor.dark, magicalUse);
             }
+            else {
+                this.party.armor.magical = Math.min(this.party.inventoryArmor.light, magicalUse);
+            }
             const elementalUse = Math.floor((Math.abs(armor.elemental) / armorTotal) * armorMax);
-            if (armor.elemental > 0) {
-                this.party.armor.elemental = Math.min(this.party.inventoryArmor.ice, elementalUse);
+            if (armor.elemental < 0) {
+                this.party.armor.elemental = -Math.min(this.party.inventoryArmor.fire, elementalUse);
             }
             else {
-                this.party.armor.elemental = -Math.min(this.party.inventoryArmor.fire, elementalUse);
+                this.party.armor.elemental = Math.min(this.party.inventoryArmor.ice, elementalUse);
             }
         }
     }

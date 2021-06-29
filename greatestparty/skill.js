@@ -5,13 +5,8 @@ class Skills {
         const defaults = { level: 0 };
         this.initiative = Object.assign(Object.assign({}, defaults), { name: 'Initiative', levelMax: 9999, costTier: 1, unlockAtCompletedQuests: 10, doTickActions: (game) => {
                 // Party members show initiative and will pick up quests on their own periodically.
-                // TODO: How will this handle really high levels where multiple quests should be
-                //       taken per tick?
                 if (rollRatio() < 0.01 * this.initiative.level) {
                     if (game.town.need > 0) {
-                        if (FLAGS.DEBUG.SKILL.INITIATIVE) {
-                            game.log('Initiative tried to take a quest.');
-                        }
                         game.takeQuest();
                     }
                 }
@@ -22,9 +17,7 @@ class Skills {
                     bonus += mod(game.town.alignment, [[-100, -0.002], [-30, 0], [30, 0.001]]);
                     if (rollRatio() < (0.0025 + bonus) * this.inspire.level) {
                         if (game.town.townsfolk > 0) {
-                            if (FLAGS.DEBUG.SKILL.INSPIRE) {
-                                game.log('Your party inspires some from the town to join.');
-                            }
+                            game.log('Your party inspires some from the town to join.');
                             const count = Math.max(1, Math.floor(game.town.townsfolk * 0.01));
                             game.joinPartyFromTown(count);
                         }

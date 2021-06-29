@@ -1,6 +1,7 @@
 declare function cheatItems(): void;
 declare function cheatArms(): void;
 declare function cheatGold(): void;
+declare function cheatSupplies(): void;
 declare function cheatStuff(): void;
 declare function cheatParty(): void;
 declare function cheatSTR(value?: number): void;

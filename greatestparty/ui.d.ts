@@ -179,12 +179,17 @@ declare class UIItems {
     potionIntUp1: UIItemsEntry;
     potionWisUp1: UIItemsEntry;
     potionChaUp1: UIItemsEntry;
+    tomeStrUp: UIItemsEntry;
+    tomeDexUp: UIItemsEntry;
+    tomeConUp: UIItemsEntry;
+    tomeIntUp: UIItemsEntry;
+    tomeWisUp: UIItemsEntry;
+    tomeChaUp: UIItemsEntry;
     potionAntidote: UIItemsEntry;
     potionHealth: UIItemsEntry;
     clericRobes: UIItemsEntry;
     boostWeapon: UIItemsEntry;
     boostArmor: UIItemsEntry;
-    tomeOfKnowledge: UIItemsEntry;
     constructor(game: Game);
     show(): void;
 }

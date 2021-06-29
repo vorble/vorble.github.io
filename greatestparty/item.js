@@ -1,8 +1,9 @@
 "use strict";
-const ITEM_NAMES_POTION = ['potionStrUp1', 'potionDexUp1', 'potionConUp1', 'potionIntUp1', 'potionWisUp1', 'potionChaUp1', 'potionAntidote', 'potionHealth'];
-const ITEM_NAMES_CONSUMABLE = ['clericRobes'];
-const ITEM_NAMES_BOOST = ['boostWeapon', 'boostArmor', 'tomeOfKnowledge'];
-const ITEM_NAMES = [...ITEM_NAMES_POTION, ...ITEM_NAMES_CONSUMABLE, ...ITEM_NAMES_BOOST];
+const ITEM_NAMES_STAT_BUFF = ['potionStrUp1', 'potionDexUp1', 'potionConUp1', 'potionIntUp1', 'potionWisUp1', 'potionChaUp1'];
+const ITEM_NAMES_STAT_BOOST = ['tomeStrUp', 'tomeDexUp', 'tomeConUp', 'tomeIntUp', 'tomeWisUp', 'tomeChaUp'];
+const ITEM_NAMES_CONSUMABLE = ['potionAntidote', 'potionHealth', 'clericRobes'];
+const ITEM_NAMES_EQUIPMENT_BOOST = ['boostWeapon', 'boostArmor'];
+const ITEM_NAMES = [...ITEM_NAMES_STAT_BUFF, ...ITEM_NAMES_STAT_BOOST, ...ITEM_NAMES_CONSUMABLE, ...ITEM_NAMES_EQUIPMENT_BOOST];
 class ItemInventory {
     constructor() {
         const defaults = { quantity: 0 };
@@ -48,6 +49,30 @@ class ItemInventory {
                     chamod: 1,
                 });
             } });
+        this.tomeStrUp = Object.assign(Object.assign({}, defaults), { name: 'Tome of STR', use: (game) => {
+                game.party.strbase += 1;
+                game.log('Your party\'s STR has increased!');
+            } });
+        this.tomeDexUp = Object.assign(Object.assign({}, defaults), { name: 'Tome of DEX', use: (game) => {
+                game.party.dexbase += 1;
+                game.log('Your party\'s DEX has increased!');
+            } });
+        this.tomeConUp = Object.assign(Object.assign({}, defaults), { name: 'Tome of CON', use: (game) => {
+                game.party.conbase += 1;
+                game.log('Your party\'s CON has increased!');
+            } });
+        this.tomeIntUp = Object.assign(Object.assign({}, defaults), { name: 'Tome of INT', use: (game) => {
+                game.party.intbase += 1;
+                game.log('Your party\'s INT has increased!');
+            } });
+        this.tomeWisUp = Object.assign(Object.assign({}, defaults), { name: 'Tome of WIS', use: (game) => {
+                game.party.wisbase += 1;
+                game.log('Your party\'s WIS has increased!');
+            } });
+        this.tomeChaUp = Object.assign(Object.assign({}, defaults), { name: 'Tome of CHA', use: (game) => {
+                game.party.chabase += 1;
+                game.log('Your party\'s CHA has increased!');
+            } });
         this.potionAntidote = Object.assign(Object.assign({}, defaults), { name: 'Antidote', use: (game) => {
                 game.party.status.poison.active = false;
             } });
@@ -65,10 +90,6 @@ class ItemInventory {
         this.boostArmor = Object.assign(Object.assign({}, defaults), { name: 'Boost Armor', use: (game) => {
                 game.party.armorPoints += 1;
                 game.log('Your party may now allocate ' + game.party.armorPoints + ' armor points.');
-            } });
-        this.tomeOfKnowledge = Object.assign(Object.assign({}, defaults), { name: 'Tome of Knowledge', use: (game) => {
-                game.party.intbase += 1;
-                game.log('Your party\'s intelligence has increased.');
             } });
     }
 }

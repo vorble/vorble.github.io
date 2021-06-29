@@ -1,10 +1,12 @@
-declare type ItemNameType_Potion = 'potionStrUp1' | 'potionDexUp1' | 'potionConUp1' | 'potionIntUp1' | 'potionWisUp1' | 'potionChaUp1' | 'potionAntidote' | 'potionHealth';
-declare const ITEM_NAMES_POTION: Array<ItemNameType_Potion>;
-declare type ItemNameType_Consumable = 'clericRobes';
+declare type ItemNameType_StatBuff = 'potionStrUp1' | 'potionDexUp1' | 'potionConUp1' | 'potionIntUp1' | 'potionWisUp1' | 'potionChaUp1';
+declare const ITEM_NAMES_STAT_BUFF: Array<ItemNameType_StatBuff>;
+declare type ItemNameType_StatBoost = 'tomeStrUp' | 'tomeDexUp' | 'tomeConUp' | 'tomeIntUp' | 'tomeWisUp' | 'tomeChaUp';
+declare const ITEM_NAMES_STAT_BOOST: Array<ItemNameType_StatBoost>;
+declare type ItemNameType_Consumable = 'potionAntidote' | 'potionHealth' | 'clericRobes';
 declare const ITEM_NAMES_CONSUMABLE: Array<ItemNameType_Consumable>;
-declare type ItemNameType_Boost = 'boostWeapon' | 'boostArmor' | 'tomeOfKnowledge';
-declare const ITEM_NAMES_BOOST: Array<ItemNameType_Boost>;
-declare type ItemNameType = ItemNameType_Potion | ItemNameType_Consumable | ItemNameType_Boost;
+declare type ItemNameType_EquipmentBoost = 'boostWeapon' | 'boostArmor';
+declare const ITEM_NAMES_EQUIPMENT_BOOST: Array<ItemNameType_EquipmentBoost>;
+declare type ItemNameType = ItemNameType_StatBuff | ItemNameType_StatBoost | ItemNameType_Consumable | ItemNameType_EquipmentBoost;
 declare const ITEM_NAMES: Array<ItemNameType>;
 interface Item {
     name: string;
@@ -18,11 +20,16 @@ declare class ItemInventory {
     potionIntUp1: Item;
     potionWisUp1: Item;
     potionChaUp1: Item;
+    tomeStrUp: Item;
+    tomeDexUp: Item;
+    tomeConUp: Item;
+    tomeIntUp: Item;
+    tomeWisUp: Item;
+    tomeChaUp: Item;
     potionAntidote: Item;
     potionHealth: Item;
     clericRobes: Item;
     boostWeapon: Item;
     boostArmor: Item;
-    tomeOfKnowledge: Item;
     constructor();
 }

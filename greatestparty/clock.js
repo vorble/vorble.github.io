@@ -24,8 +24,14 @@ const TICKS_PER_TOCK = 20;
 const TOCKS_PER_TERM = 20;
 const TERMS_PER_SEASON = 25;
 const SEASONS_PER_YEAR = SEASONS.length;
+// The SEMITERM isn't part of the normal clock, it's a distinguishable period of
+// time between a TOCK and a TERM.
+const TOCKS_PER_SEMITERM = 5;
+if (TOCKS_PER_TERM % TOCKS_PER_SEMITERM != 0) {
+    throw new Error('TOCKS_PER_TERM must be a multiple of ' + TOCKS_PER_SEMITERM + '!');
+}
 function clockInput(clock) {
-    return unwrapClock({
+    return clockUnwrap({
         year: clock.year == null ? 0 : clock.year,
         season: clock.season == null ? 0 : clock.season,
         term: clock.term == null ? 0 : clock.term,
@@ -34,7 +40,7 @@ function clockInput(clock) {
     });
 }
 function clockAdd(a, b) {
-    return unwrapClock({
+    return clockUnwrap({
         year: a.year + b.year,
         season: a.season + b.season,
         term: a.term + b.term,
@@ -86,22 +92,22 @@ function clockToSign(clock) {
 function clockIsSign(clock, sign) {
     return sign == clockToSign(clock);
 }
-function unwrapClock(clock) {
+function clockUnwrap(clock) {
     while (clock.tick >= TICKS_PER_TOCK) {
         clock.tick -= TICKS_PER_TOCK;
         clock.tock += 1;
-        while (clock.tock >= TOCKS_PER_TERM) {
-            clock.tock -= TOCKS_PER_TERM;
-            clock.term += 1;
-            while (clock.term >= TERMS_PER_SEASON) {
-                clock.term -= TERMS_PER_SEASON;
-                clock.season += 1;
-                while (clock.season >= SEASONS_PER_YEAR) {
-                    clock.season -= SEASONS_PER_YEAR;
-                    clock.year += 1;
-                }
-            }
-        }
+    }
+    while (clock.tock >= TOCKS_PER_TERM) {
+        clock.tock -= TOCKS_PER_TERM;
+        clock.term += 1;
+    }
+    while (clock.term >= TERMS_PER_SEASON) {
+        clock.term -= TERMS_PER_SEASON;
+        clock.season += 1;
+    }
+    while (clock.season >= SEASONS_PER_YEAR) {
+        clock.season -= SEASONS_PER_YEAR;
+        clock.year += 1;
     }
     return clock;
 }

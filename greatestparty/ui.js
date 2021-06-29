@@ -51,9 +51,7 @@ class UIParty {
         {
             let text = SEASONS[game.season];
             text += ' ' + game.year;
-            if (FLAGS.SHOW_TICKS) {
-                text += ` (${SIGNS[clockToSign(game)]} ${fmt02d(game.term)}:${fmt02d(game.tock)}:${fmt02d(game.tick)})`;
-            }
+            text += ` (${SIGNS[clockToSign(game)]} ${fmt02d(game.term)}:${fmt02d(game.tock)}:${fmt02d(game.tick)})`;
             this.date.innerText = text;
         }
         this.size.innerText = '' + game.party.size;
@@ -64,10 +62,6 @@ class UIParty {
         this.blood.innerText = '' + game.party.blood;
         this.food.innerText = '' + game.party.food;
         this.water.innerText = '' + game.party.water;
-        if (FLAGS.SHOW_HUNGER_THIRST) {
-            this.food.innerText += ' (' + game.party.hunger + ')';
-            this.water.innerText += ' (' + game.party.thirst + ')';
-        }
         this.str.innerText = '' + this.game.party.str;
         this.dex.innerText = '' + this.game.party.dex;
         this.con.innerText = '' + this.game.party.con;
@@ -344,12 +338,8 @@ class UIEquipment {
         const { weapon, weaponConfig, armor, armorConfig } = game.party;
         const weaponSize = Math.abs(weapon.physical) + Math.abs(weapon.magical) + Math.abs(weapon.elemental);
         const armorSize = Math.abs(armor.physical) + Math.abs(armor.magical) + Math.abs(armor.elemental);
-        this.weapon.innerText = '' + weaponSize;
-        this.armor.innerText = '' + armorSize;
-        if (FLAGS.SHOW_EQ_DETAILS) {
-            this.weapon.innerText += ` (${weapon.physical}/${weapon.magical}/${weapon.elemental})`;
-            this.armor.innerText += ` (${armor.physical}/${armor.magical}/${armor.elemental})`;
-        }
+        this.weapon.innerText = `${weaponSize} (${weapon.physical}/${weapon.magical}/${weapon.elemental})`;
+        this.armor.innerText = `${armorSize} (${armor.physical}/${armor.magical}/${armor.elemental})`;
         let weaponPhysicalMax = game.party.weaponPoints - Math.abs(weaponConfig.magical) - Math.abs(weaponConfig.elemental);
         let weaponMagicalMax = game.party.weaponPoints - Math.abs(weaponConfig.physical) - Math.abs(weaponConfig.elemental);
         let weaponElementalMax = game.party.weaponPoints - Math.abs(weaponConfig.physical) - Math.abs(weaponConfig.magical);
@@ -823,12 +813,17 @@ class UIItems {
         this.potionIntUp1 = new UIItemsEntry('potionIntUp1');
         this.potionWisUp1 = new UIItemsEntry('potionWisUp1');
         this.potionChaUp1 = new UIItemsEntry('potionChaUp1');
+        this.tomeStrUp = new UIItemsEntry('tomeStrUp');
+        this.tomeDexUp = new UIItemsEntry('tomeDexUp');
+        this.tomeConUp = new UIItemsEntry('tomeConUp');
+        this.tomeIntUp = new UIItemsEntry('tomeIntUp');
+        this.tomeWisUp = new UIItemsEntry('tomeWisUp');
+        this.tomeChaUp = new UIItemsEntry('tomeChaUp');
         this.potionAntidote = new UIItemsEntry('potionAntidote');
         this.potionHealth = new UIItemsEntry('potionHealth');
         this.clericRobes = new UIItemsEntry('clericRobes');
         this.boostWeapon = new UIItemsEntry('boostWeapon');
         this.boostArmor = new UIItemsEntry('boostArmor');
-        this.tomeOfKnowledge = new UIItemsEntry('tomeOfKnowledge');
         for (const name of ITEM_NAMES) {
             this[name].use.onclick = (e) => {
                 game.useItem(name);
@@ -840,7 +835,6 @@ class UIItems {
             const item = this.game.party.items[name];
             const entry = this[name];
             entry.quantity.innerText = '' + item.quantity;
-            // TODO: Change default style on these in the html file to display: none
             entry.entry.style.display = item.quantity > 0 ? '' : 'none';
         }
     }

@@ -44,13 +44,21 @@ game.registerLevel({
         town.goldPerQuest = 20;
         function loot(game) {
             const r = rollRatio();
-            if (r < 0.01) {
-                const name = rollChoice(ITEM_NAMES_BOOST);
+            if (r <= 0.001) {
+                const name = rollChoice(ITEM_NAMES_STAT_BOOST);
+                game.party.items[name].quantity += 1;
+                game.log('Your party receives 1 ' + game.party.items[name].name + '.');
+            }
+            else if (r < 0.01) {
+                const name = rollChoice(ITEM_NAMES_EQUIPMENT_BOOST);
                 game.party.items[name].quantity += 1;
                 game.log('Your party receives 1 ' + game.party.items[name].name + '.');
             }
             else if (r < 0.16) {
-                const name = rollChoice(ITEM_NAMES_POTION);
+                const name = rollChoice([
+                    ...ITEM_NAMES_STAT_BUFF,
+                    ...ITEM_NAMES_CONSUMABLE,
+                ]);
                 game.party.items[name].quantity += 1;
                 game.log('Your party receives 1 ' + game.party.items[name].name + '.');
             }
@@ -180,18 +188,37 @@ game.registerLevel({
             {
                 name: 'Unwelcome Here',
                 weight: 1,
-                predicate: (game) => game.town.alignment <= -20,
+                predicate: (game) => !townState.partyInDesert && game.town.alignment <= -20,
                 action: (game) => {
                     const roll = (rollDie(20)
                         + mod(game.town.alignment, [[-100, -19], [-50, -5], [-20, 0]]));
-                    if (roll <= 3) {
+                    if (roll <= 6) {
                         game.log('The townsfolk chase a member of your party through the streets and kill them.');
                         game.killPartyMembers(1);
-                        game.adjustAlignment(4);
+                        game.adjustAlignment(8);
                     }
                     else {
                         game.log('The townsfolk chase a member of your party through the streets.');
-                        game.adjustAlignment(1);
+                        game.adjustAlignment(5);
+                    }
+                },
+            },
+            {
+                name: 'Beloved Heroes',
+                weight: 1,
+                predicate: (game) => !townState.partyInDesert && game.town.alignment >= 40,
+                action: (game) => {
+                    const roll = (rollDie(20)
+                        + mod(game.town.alignment, [[40, 0], [70, 5], [100, 10]]));
+                    if (roll <= 17) {
+                        game.log('The townsfolk cheer you on as you make your way through town.');
+                    }
+                    else {
+                        game.log('The townsfolk shower you with gold and items as you make your way through town.');
+                        game.receiveGold(rollRange(12, 20));
+                        loot(game);
+                        loot(game);
+                        game.adjustAlignment(-5);
                     }
                 },
             },
@@ -1185,7 +1212,6 @@ game.registerLevel({
                         },
                     };
                     function changeWeapon(game) {
-                        // TODO: Should the left/rightness be based on the party's perspective or the eyes'?
                         self.weapon.physical = 0;
                         self.weapon.magical = 0;
                         self.weapon.elemental = 0;
@@ -1196,6 +1222,10 @@ game.registerLevel({
                         const amount = sideRoll == 0 ? -WEP : WEP;
                         const stat = EQ_BROAD_CATEGORIES[directionRoll];
                         self.weapon[stat] = amount;
+                        // Left eye: player should configure left armor grid.
+                        // Right eye: player should configure right armor grid.
+                        // Looking up, ahead, down: player should put points in physical,
+                        // magical, or elemental respectively.
                         game.log('The ' + side + ' eye looks ' + direction + '.');
                     }
                     return self;

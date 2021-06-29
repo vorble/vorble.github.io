@@ -54,13 +54,7 @@ declare function statusItemInput(status: StatusItemInput): {
     name: string;
 };
 declare function statusIsExpired(game: Game, status: StatusItemCore): boolean;
-declare function statusSetExpiry(game: Game, status: Clock, length: {
-    tick?: number;
-    tock?: number;
-    term?: number;
-    season?: number;
-    year?: number;
-}): void;
+declare function statusSetExpiry(game: Game, status: Clock, length: ClockInput): void;
 declare class Status {
     berzerk: StatusItemCore;
     islandCurse: StatusItemCore;

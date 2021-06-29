@@ -23,10 +23,15 @@ function cheatArms() {
 function cheatGold() {
     game.receiveGold(100000);
 }
+function cheatSupplies() {
+    game.party.food += 1000;
+    game.party.water += 1000;
+}
 function cheatStuff() {
     cheatItems();
     cheatArms();
     cheatGold();
+    cheatSupplies();
 }
 function cheatParty() {
     game.party.size += 10;
@@ -47,6 +52,7 @@ function cheatStats(value) {
 }
 function cheatNextLevel() {
     game.nextLevel();
+    ui.show();
 }
 function cheatLevel2() {
     game.party.gold = 1500;
