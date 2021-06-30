@@ -48,6 +48,10 @@ class UIParty {
     }
     show() {
         const game = this.game;
+        function fmt02d(value) {
+            const result = '' + value;
+            return result.length == 1 ? '0' + result : result;
+        }
         {
             let text = SEASONS[game.season];
             text += ' ' + game.year;

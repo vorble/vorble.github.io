@@ -51,3 +51,33 @@ increase equipment power.
 * Animate - Reanimate a party member from acquired blood.
 * Sabotage - Create additional need for quests in town by sabotaging the town.
 * Acclaim - Your acclaim as a party creates additional need for quests in town.
+
+### Clock and Calendar
+
+The game clock and calendar is split into time units:
+
+* Tick - 20 ticks per tock, lasts around a quarter second for the player.
+* Tock - 20 tocks per term.
+* Term - 25 terms per season.
+* Season - 4 seasons per year (spring, summer, fall, winter).
+* Year - Lasts around three hours for the player.
+
+Example date: Winter 332 (Yurn 14:01:08).
+
+* Winter - The current season.
+* 332 - The current year.
+* Yurn - The astrological sign for the year.
+* 14:01:08 - The current term, tock, and tick.
+
+#### Signs
+
+The year determines the astrological sign:
+
+* Err
+* Goh
+* Yurn
+* Joyn
+* Ryna
+* Sil
+
+Depending on the astrological sign, different events may happen to your party.
