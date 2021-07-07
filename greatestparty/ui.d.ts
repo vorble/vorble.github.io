@@ -21,6 +21,7 @@ declare class UIParty {
     wis: HTMLElement;
     cha: HTMLElement;
     status: HTMLElement;
+    pauseButton: HTMLButtonElement;
     sacrificeButton: HTMLButtonElement;
     animateButton: HTMLButtonElement;
     constructor(game: Game);
@@ -47,6 +48,7 @@ declare class UIEquipment {
 }
 declare class UITown {
     game: Game;
+    name: HTMLElement;
     townsfolk: HTMLElement;
     hireCost: HTMLElement;
     need: HTMLElement;
@@ -55,7 +57,6 @@ declare class UITown {
     conscript: HTMLButtonElement;
     takeQuest: HTMLButtonElement;
     fightBoss: HTMLButtonElement;
-    pause: HTMLButtonElement;
     constructor(game: Game);
     show(): void;
 }
@@ -188,6 +189,7 @@ declare class UIItems {
     potionAntidote: UIItemsEntry;
     potionHealth: UIItemsEntry;
     clericRobes: UIItemsEntry;
+    potionEnrage: UIItemsEntry;
     boostWeapon: UIItemsEntry;
     boostArmor: UIItemsEntry;
     constructor(game: Game);

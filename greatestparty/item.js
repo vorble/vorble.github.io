@@ -1,7 +1,7 @@
 "use strict";
 const ITEM_NAMES_STAT_BUFF = ['potionStrUp1', 'potionDexUp1', 'potionConUp1', 'potionIntUp1', 'potionWisUp1', 'potionChaUp1'];
 const ITEM_NAMES_STAT_BOOST = ['tomeStrUp', 'tomeDexUp', 'tomeConUp', 'tomeIntUp', 'tomeWisUp', 'tomeChaUp'];
-const ITEM_NAMES_CONSUMABLE = ['potionAntidote', 'potionHealth', 'clericRobes'];
+const ITEM_NAMES_CONSUMABLE = ['potionAntidote', 'potionHealth', 'clericRobes', 'potionEnrage'];
 const ITEM_NAMES_EQUIPMENT_BOOST = ['boostWeapon', 'boostArmor'];
 const ITEM_NAMES = [...ITEM_NAMES_STAT_BUFF, ...ITEM_NAMES_STAT_BOOST, ...ITEM_NAMES_CONSUMABLE, ...ITEM_NAMES_EQUIPMENT_BOOST];
 class ItemInventory {
@@ -82,6 +82,13 @@ class ItemInventory {
         this.clericRobes = Object.assign(Object.assign({}, defaults), { name: 'Cleric Robes', use: (game) => {
                 game.party.dealignmentProtection += 50;
                 game.log('Your party is temporarily protected from dealignment.');
+            } });
+        this.potionEnrage = Object.assign(Object.assign({}, defaults), { name: 'Enrage Potion', use: (game) => {
+                game.party.status.addStatus(game, {
+                    name: 'Enrage',
+                    enrage: true,
+                    tock: 2,
+                });
             } });
         this.boostWeapon = Object.assign(Object.assign({}, defaults), { name: 'Boost Weapon', use: (game) => {
                 game.party.weaponPoints += 1;

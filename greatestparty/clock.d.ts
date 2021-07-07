@@ -19,6 +19,7 @@ declare const TICKS_PER_TOCK = 20;
 declare const TOCKS_PER_TERM = 20;
 declare const TERMS_PER_SEASON = 25;
 declare const SEASONS_PER_YEAR: number;
+declare const TICKS_PER_SEMITOCK = 5;
 declare const TOCKS_PER_SEMITERM = 5;
 interface Clock {
     year: number;

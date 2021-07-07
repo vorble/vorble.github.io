@@ -21,6 +21,7 @@ interface StatusItem extends Clock {
     preventHeal: boolean;
     damagePerTick: number;
     damagePerTock: number;
+    enrage: boolean;
 }
 interface StatusItemInput extends ClockInput {
     name: string;
@@ -34,6 +35,7 @@ interface StatusItemInput extends ClockInput {
     preventHeal?: boolean;
     damagePerTick?: number;
     damagePerTock?: number;
+    enrage?: boolean;
 }
 declare function statusItemInput(status: StatusItemInput): {
     strmod: number;
@@ -46,6 +48,7 @@ declare function statusItemInput(status: StatusItemInput): {
     preventHeal: boolean;
     damagePerTick: number;
     damagePerTock: number;
+    enrage: boolean;
     year: number;
     season: number;
     term: number;
@@ -66,6 +69,7 @@ declare class Status {
     constructor();
     doTickActions(game: Game): void;
     hasPreventAttack(): boolean;
+    hasEnrage(): boolean;
     addStatus(game: Game, status: StatusItemInput): void;
     _applyStatus(game: Game, status: StatusItem): void;
     _unapplyStatus(game: Game, status: StatusItem): void;

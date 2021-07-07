@@ -45,6 +45,10 @@ class UIParty {
         this.animateButton.onclick = (e) => {
             game.animate();
         };
+        this.pauseButton = getElementByIdAsType('panel-party-pause-button', HTMLButtonElement);
+        this.pauseButton.onclick = (e) => {
+            game.togglePause();
+        };
     }
     show() {
         const game = this.game;
@@ -87,6 +91,8 @@ class UIParty {
         this.sacrificeButton.style.display = game.party.skills.sacrifice.level > 0 ? '' : 'none';
         this.animateButton.disabled = !game.canAnimate();
         this.animateButton.style.display = game.party.skills.animate.level > 0 ? '' : 'none';
+        this.pauseButton.disabled = !game.running && !game.paused;
+        this.pauseButton.innerText = game.paused ? 'Resume' : 'Pause';
     }
 }
 class UIEquipment {
@@ -427,6 +433,7 @@ class UIEquipment {
 class UITown {
     constructor(game) {
         this.game = game;
+        this.name = getElementById('panel-town-name');
         this.townsfolk = getElementById('panel-town-townsfolk-value');
         this.hireCost = getElementById('panel-town-hire-cost-value');
         this.need = getElementById('panel-town-need-value');
@@ -447,13 +454,10 @@ class UITown {
         this.fightBoss.onclick = (e) => {
             game.fightBoss();
         };
-        this.pause = getElementByIdAsType('panel-town-pause-button', HTMLButtonElement);
-        this.pause.onclick = (e) => {
-            game.togglePause();
-        };
     }
     show() {
         const game = this.game;
+        this.name.innerText = game.town.name;
         this.townsfolk.innerText = '' + game.town.townsfolk;
         this.hireCost.innerText = '' + game.town.hireCost;
         this.need.innerText = '' + game.town.need;
@@ -463,8 +467,6 @@ class UITown {
         this.conscript.style.display = game.party.skills.conscript.level > 0 ? '' : 'none';
         this.takeQuest.disabled = game.town.need <= 0 || game.party.quests >= game.party.size;
         this.fightBoss.disabled = game.enemy != null;
-        this.pause.disabled = !game.running && !game.paused;
-        this.pause.innerText = game.paused ? 'Resume' : 'Pause';
     }
 }
 class UIShop {
@@ -826,6 +828,7 @@ class UIItems {
         this.potionAntidote = new UIItemsEntry('potionAntidote');
         this.potionHealth = new UIItemsEntry('potionHealth');
         this.clericRobes = new UIItemsEntry('clericRobes');
+        this.potionEnrage = new UIItemsEntry('potionEnrage');
         this.boostWeapon = new UIItemsEntry('boostWeapon');
         this.boostArmor = new UIItemsEntry('boostArmor');
         for (const name of ITEM_NAMES) {

@@ -1,7 +1,7 @@
 "use strict";
 const STATUSES = ['berzerk', 'islandCurse', 'angeredGods', 'poison', 'bleeding', 'outOfTown'];
 function statusItemInput(status) {
-    return Object.assign(Object.assign({ name: status.name }, clockInput(status)), { strmod: status.strmod || 0, dexmod: status.dexmod || 0, conmod: status.conmod || 0, intmod: status.intmod || 0, wismod: status.wismod || 0, chamod: status.chamod || 0, preventAttack: status.preventAttack || false, preventHeal: status.preventHeal || false, damagePerTick: status.damagePerTick || 0, damagePerTock: status.damagePerTock || 0 });
+    return Object.assign(Object.assign({ name: status.name }, clockInput(status)), { strmod: status.strmod || 0, dexmod: status.dexmod || 0, conmod: status.conmod || 0, intmod: status.intmod || 0, wismod: status.wismod || 0, chamod: status.chamod || 0, preventAttack: status.preventAttack || false, preventHeal: status.preventHeal || false, damagePerTick: status.damagePerTick || 0, damagePerTock: status.damagePerTock || 0, enrage: status.enrage || false });
 }
 function statusIsExpired(game, status) {
     if (status.year == 0 && status.term == 0 && status.tock == 0 && status.tick == 0)
@@ -50,18 +50,28 @@ class Status {
         this.other = [];
     }
     doTickActions(game) {
-        // TODO: Gross, filter with side effects!
-        this.other = this.other.filter((status) => {
-            if (clockCompare(status, game) < 0) {
+        const nextOther = [];
+        for (const status of this.other) {
+            if (clockCompare(game, status) >= 0) {
                 this._unapplyStatus(game, status);
-                return false;
             }
-            return true;
-        });
+            else {
+                nextOther.push(status);
+            }
+        }
+        this.other = nextOther;
     }
     hasPreventAttack() {
         for (const status of this.other) {
             if (status.preventAttack) {
+                return true;
+            }
+        }
+        return false;
+    }
+    hasEnrage() {
+        for (const status of this.other) {
+            if (status.enrage) {
                 return true;
             }
         }

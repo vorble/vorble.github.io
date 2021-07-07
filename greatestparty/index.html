@@ -71,7 +71,10 @@
 <body>
   <div class="container">
     <div id="panel-party" class="panel">
-      <div>Date: <div id="panel-party-date-value">Spring 0</div></div>
+      <div>
+        <div id="panel-party-date-value">Spring 0 (Err 00:00:00)</div>
+        <button id="panel-party-pause-button">Pause</button>
+      </div>
       <table>
         <tr>
           <td>STR</td>
@@ -342,6 +345,12 @@
         <div id="panel-items-clericRobes-quantity-value">0</div>
         <button id="panel-items-clericRobes-use-button">Use</button>
       </div>
+      <div id="panel-items-potionEnrage" style="display: none;">
+        <br>
+        Enrage Potion:
+        <div id="panel-items-potionEnrage-quantity-value">0</div>
+        <button id="panel-items-potionEnrage-use-button">Use</button>
+      </div>
       <div id="panel-items-boostWeapon" style="display: none;">
         <br>
         Boost Weapon:
@@ -356,7 +365,7 @@
       </div>
     </div>
     <div id="panel-town" class="panel">
-      <div>Town</div>
+      <div id="panel-town-name">Town</div>
       <br>
       <div>Townsfolk: <div id="panel-town-townsfolk-value">0</div>
         <button id="panel-town-hire-button">Hire <div id="panel-town-hire-cost-value">0</div>g</button>
@@ -369,8 +378,6 @@
       <div>Enemy: <div id="panel-town-enemy-value">0</div></div>
       <br>
       <div><button id="panel-town-fight-boss-button">Fight Boss</button></div>
-      <br>
-      <div><button id="panel-town-pause-button">Pause</button></div>
     </div>
     <div id="panel-shop" class="panel">
       <div>Shop</div>

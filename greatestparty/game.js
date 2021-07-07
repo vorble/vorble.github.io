@@ -20,7 +20,6 @@ class Game {
         this.boss = null;
         this.enemy = null;
         this.events = [];
-        this.hooks = {};
     }
     registerLevel(level) {
         this.levels.push(level);
@@ -166,7 +165,6 @@ class Game {
                 },
             },
         ];
-        this.hooks = {};
         this.party = new Party();
         this.party.size = 4;
         this.party.gold = 300;
@@ -585,8 +583,9 @@ class Game {
         this.textLog.push(text);
     }
     fight() {
-        if (this.enemy != null && this.tick == 0) {
-            if (this.tock % 5 == 0) {
+        const fightTime = this.tick == 0 || (this.party.status.hasEnrage() && this.tick % TICKS_PER_SEMITOCK == 0);
+        if (this.enemy != null && fightTime) {
+            if (this.tock % TOCKS_PER_SEMITERM == 0) {
                 const event = this.pickEnemyEvent(this.enemy);
                 if (event != null) {
                     event.action(this);
@@ -655,14 +654,16 @@ class Game {
                 }
             }
         };
-        // TODO: Gross, filter with side effects.
-        this.timeouts = this.timeouts.filter((timeout) => {
+        const nextTimeouts = [];
+        for (const timeout of this.timeouts) {
             if (clockCompare(this, timeout.clock) >= 0) {
                 timeout.callback();
-                return false;
             }
-            return true;
-        });
+            else {
+                nextTimeouts.push(timeout);
+            }
+        }
+        this.timeouts = nextTimeouts;
         for (const status of STATUSES) {
             const s = this.party.status[status];
             if (s.active) {
@@ -682,7 +683,6 @@ class Game {
             }
         }
         doActions(this.town.hooks);
-        doActions(this.hooks);
         // ----------------------------------------------------
         // EATING AND DRINKING
         // ----------------------------------------------------

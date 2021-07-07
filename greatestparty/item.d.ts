@@ -2,7 +2,7 @@ declare type ItemNameType_StatBuff = 'potionStrUp1' | 'potionDexUp1' | 'potionCo
 declare const ITEM_NAMES_STAT_BUFF: Array<ItemNameType_StatBuff>;
 declare type ItemNameType_StatBoost = 'tomeStrUp' | 'tomeDexUp' | 'tomeConUp' | 'tomeIntUp' | 'tomeWisUp' | 'tomeChaUp';
 declare const ITEM_NAMES_STAT_BOOST: Array<ItemNameType_StatBoost>;
-declare type ItemNameType_Consumable = 'potionAntidote' | 'potionHealth' | 'clericRobes';
+declare type ItemNameType_Consumable = 'potionAntidote' | 'potionHealth' | 'clericRobes' | 'potionEnrage';
 declare const ITEM_NAMES_CONSUMABLE: Array<ItemNameType_Consumable>;
 declare type ItemNameType_EquipmentBoost = 'boostWeapon' | 'boostArmor';
 declare const ITEM_NAMES_EQUIPMENT_BOOST: Array<ItemNameType_EquipmentBoost>;
@@ -29,6 +29,7 @@ declare class ItemInventory {
     potionAntidote: Item;
     potionHealth: Item;
     clericRobes: Item;
+    potionEnrage: Item;
     boostWeapon: Item;
     boostArmor: Item;
     constructor();

@@ -9,8 +9,6 @@ interface GameEvent {
     predicate?: (game: Game) => boolean;
     action: (game: Game) => void;
 }
-interface GameHooks extends ClockActions {
-}
 declare class Game {
     party: Party;
     town: Town;
@@ -33,7 +31,6 @@ declare class Game {
     boss: null | Enemy;
     enemy: null | Enemy;
     events: Array<GameEvent>;
-    hooks: GameHooks;
     constructor();
     registerLevel(level: Level): void;
     newGame(): void;
