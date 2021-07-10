@@ -190,6 +190,8 @@ declare class UIItems {
     potionHealth: UIItemsEntry;
     clericRobes: UIItemsEntry;
     potionEnrage: UIItemsEntry;
+    gobletBlood: UIItemsEntry;
+    pocketAutomaton: UIItemsEntry;
     boostWeapon: UIItemsEntry;
     boostArmor: UIItemsEntry;
     constructor(game: Game);

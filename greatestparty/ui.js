@@ -829,6 +829,8 @@ class UIItems {
         this.potionHealth = new UIItemsEntry('potionHealth');
         this.clericRobes = new UIItemsEntry('clericRobes');
         this.potionEnrage = new UIItemsEntry('potionEnrage');
+        this.gobletBlood = new UIItemsEntry('gobletBlood');
+        this.pocketAutomaton = new UIItemsEntry('pocketAutomaton');
         this.boostWeapon = new UIItemsEntry('boostWeapon');
         this.boostArmor = new UIItemsEntry('boostArmor');
         for (const name of ITEM_NAMES) {
