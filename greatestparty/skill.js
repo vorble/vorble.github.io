@@ -1,5 +1,5 @@
 "use strict";
-const SKILLS = ['initiative', 'inspire', 'sacrifice', 'conscript', 'animate', 'sabotage', 'acclaim'];
+const SKILLS = ['initiative', 'inspire', 'sacrifice', 'conscript', 'animate', 'sabotage', 'acclaim', 'rationing'];
 class Skills {
     constructor() {
         const defaults = { level: 0 };
@@ -60,6 +60,7 @@ class Skills {
                     }
                 }
             } });
+        this.rationing = Object.assign(Object.assign({}, defaults), { name: 'Rationing', levelMax: 5, costTier: 5, unlockAtCompletedQuests: 150 });
     }
 }
 //# sourceMappingURL=skill.js.map

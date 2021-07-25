@@ -113,6 +113,16 @@ game.registerLevel({
                 game.log('Your party receives 1 ' + game.party.items[name].name + '.');
             }
         }
+        function lootEquipmentBoost(game) {
+            const name = rollChoice(ITEM_NAMES_EQUIPMENT_BOOST);
+            game.party.items[name].quantity += 1;
+            game.log('Your party receives 1 ' + game.party.items[name].name + '.');
+        }
+        function lootStatBoost(game) {
+            const name = rollChoice(ITEM_NAMES_STAT_BOOST);
+            game.party.items[name].quantity += 1;
+            game.log('Your party receives 1 ' + game.party.items[name].name + '.');
+        }
         function lootTrash(game) {
             if (rollRatio() <= 0.3) {
                 const typ = rollChoice(['soiled shoe', 'worn leather strap', 'ragged cap', 'mold covered slacks', 'used monocle']);
@@ -136,6 +146,20 @@ game.registerLevel({
                 while (townState.ticksMaybeInflictIslandCurse >= TICKS_PER_TOCK * 5) {
                     maybeInflictIslandCurse(game);
                     townState.ticksMaybeInflictIslandCurse -= TICKS_PER_TOCK * 5;
+                }
+            },
+            onSacrifice: (game) => {
+                game.adjustAlignment(-2);
+                if (rollDie(20) <= 5) {
+                    game.log('The townsfolk notice the sacrificial ritual and vehemently disapprove.');
+                    game.adjustAlignment(-3);
+                }
+            },
+            onAnimate: (game) => {
+                game.adjustAlignment(-1);
+                if (rollDie(20) <= 5) {
+                    game.log('The townsfolk are disgusted with your party\'s use of dark magic.');
+                    game.adjustAlignment(-3);
                 }
             },
         };
@@ -249,6 +273,26 @@ game.registerLevel({
                     game.log(phrase);
                     loot(game);
                     game.receiveGold(rollRange(1, 10));
+                },
+            },
+            // For when the town is upset with the party.
+            {
+                name: 'Resistance',
+                weight: 2,
+                predicate: (game) => game.town.alignment <= -65,
+                action: (game) => {
+                    const roll = (rollDie(20)
+                        + mod(game.town.alignment, [[-100, -19], [-50, -5], [-20, 0]]));
+                    if (roll <= 3) {
+                        game.log('The townsfolk corner a lone member of your party looking for work and kill them.');
+                        game.killPartyMembers(1);
+                        game.adjustAlignment(4);
+                    }
+                    else {
+                        game.log('The townsfolk corner a lone member of your party looking for work and give them a good beating.');
+                        game.party.damage += 75;
+                        game.adjustAlignment(1);
+                    }
                 },
             },
             {
@@ -388,8 +432,8 @@ game.registerLevel({
                         const found = rollRatio(); // Roll to determine if the treasure is found.
                         if (found < 0.02) {
                             game.log(scenario.win);
-                            game.party.items.boostWeapon.quantity += 1;
-                            game.party.items.boostArmor.quantity += 1;
+                            lootEquipmentBoost(game);
+                            lootStatBoost(game);
                             loot(game);
                             loot(game);
                             loot(game);

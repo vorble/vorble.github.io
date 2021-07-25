@@ -21,11 +21,11 @@ game.registerLevel({
         town.hireCost = 100;
         town.conscriptRatio = 0.5;
         town.conscriptViolenceRatio = 0.4;
-        town.foodStock = 250;
+        town.foodStock = 5000;
         town.foodSupport = FOOD_SUPPORT_NORMAL;
         town.foodCostBuy = [4, 4, 2, 5];
         town.foodCostSell = [2, 2, 1, 4];
-        town.waterStock = 150;
+        town.waterStock = 300;
         town.waterSupport = WATER_SUPPORT_NORMAL;
         town.waterCostBuy = [4, 5, 4, 4];
         town.waterCostSell = [2, 2, 2, 2];
@@ -69,6 +69,16 @@ game.registerLevel({
                 inv[fine] += 1;
                 game.log('Your party receives 1 ' + fine + ' ' + typ + '.');
             }
+        }
+        function lootEquipmentBoost(game) {
+            const name = rollChoice(ITEM_NAMES_EQUIPMENT_BOOST);
+            game.party.items[name].quantity += 1;
+            game.log('Your party receives 1 ' + game.party.items[name].name + '.');
+        }
+        function lootStatBoost(game) {
+            const name = rollChoice(ITEM_NAMES_STAT_BOOST);
+            game.party.items[name].quantity += 1;
+            game.log('Your party receives 1 ' + game.party.items[name].name + '.');
         }
         function maybeGoToDesert(game) {
             const r = (rollDie(20)
@@ -144,6 +154,20 @@ game.registerLevel({
                 // The party gains knowledge of the desert the more time they spend there.
                 if (townState.partyInDesert) {
                     gainDesertKnowledge(1);
+                }
+            },
+            onSacrifice: (game) => {
+                game.adjustAlignment(-2);
+                if (rollDie(20) <= 5) {
+                    game.log('The townsfolk notice the sacrificial ritual and vehemently disapprove.');
+                    game.adjustAlignment(-3);
+                }
+            },
+            onAnimate: (game) => {
+                game.adjustAlignment(-1);
+                if (rollDie(20) <= 5) {
+                    game.log('The townsfolk are disgusted with your party\'s use of dark magic.');
+                    game.adjustAlignment(-3);
                 }
             },
         };
@@ -249,7 +273,7 @@ game.registerLevel({
                     if (!townState.crispin1Introduced) {
                         game.log('As your party makes its way through the wide and well trodden streets of Spindling,'
                             + ' they come across a man venting his frustrations while holding several small bits of finely laquered wood.'
-                            + ' the man takes notice of your precession and waves you down.'
+                            + ' The man takes notice of your precession and waves you down.'
                             + ' "Could you lend me your backs for a while? Maybe pick up a few of the bigger pieces?"');
                         townState.crispin1Introduced = true;
                     }
@@ -369,9 +393,9 @@ game.registerLevel({
                 predicate: (game) => !townState.partyInDesert && !townState.dixieDone,
                 action: (game) => {
                     if (!townState.dixieIntroduced) {
-                        game.log('Along a main artery through the town of Spindling, a crown is gathered around a local eatery.'
+                        game.log('Along a main artery through the town of Spindling, a crowd is gathered around a local eatery.'
                             + ' The proprietress deftfully orders the staff to serve the crowd.'
-                            + ' As the crown wanes, the proprietress approaches your party and says'
+                            + ' As the crowd wanes, the proprietress approaches your party and says'
                             + ' "These crowds will look puny compared to what I have cooked up for them next.'
                             + ' I\'m Dixie and I\'m looking for exotic produce. Could you find some for me?"');
                         townState.dixieIntroduced = true;
@@ -830,6 +854,11 @@ game.registerLevel({
                             game.log('Townsfolk from Spindling cheer for your party as they return to the town. An elder speaks up, "We will forever miss those who were taken from us. We owe much and more to these brave souls for delivering us from the duke\'s evil."');
                             game.adjustAlignment(50);
                             game.receiveGold(rollRange(200, 300));
+                            lootEquipmentBoost(game);
+                            lootStatBoost(game);
+                            if (rollRatio() <= 0.5) {
+                                lootStatBoost(game);
+                            }
                             loot(game);
                             loot(game);
                             loot(game);

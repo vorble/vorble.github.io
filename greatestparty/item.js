@@ -1,7 +1,7 @@
 "use strict";
 const ITEM_NAMES_STAT_BUFF = ['potionStrUp1', 'potionDexUp1', 'potionConUp1', 'potionIntUp1', 'potionWisUp1', 'potionChaUp1'];
 const ITEM_NAMES_STAT_BOOST = ['tomeStrUp', 'tomeDexUp', 'tomeConUp', 'tomeIntUp', 'tomeWisUp', 'tomeChaUp'];
-const ITEM_NAMES_CONSUMABLE = ['potionAntidote', 'potionHealth', 'clericRobes', 'potionEnrage', 'gobletBlood', 'pocketAutomaton'];
+const ITEM_NAMES_CONSUMABLE = ['potionAntidote', 'potionHealth', 'clericRobes', 'potionEnrage', 'gobletBlood', 'pocketAutomaton', 'basicProvisions'];
 const ITEM_NAMES_EQUIPMENT_BOOST = ['boostWeapon', 'boostArmor'];
 const ITEM_NAMES = [...ITEM_NAMES_STAT_BUFF, ...ITEM_NAMES_STAT_BOOST, ...ITEM_NAMES_CONSUMABLE, ...ITEM_NAMES_EQUIPMENT_BOOST];
 class ItemInventory {
@@ -98,6 +98,13 @@ class ItemInventory {
         this.pocketAutomaton = Object.assign(Object.assign({}, defaults), { name: 'Pocket Automaton', use: (game) => {
                 game.party.size += 1;
                 game.log('The automaton springs to life. Your party grows.');
+            } });
+        this.basicProvisions = Object.assign(Object.assign({}, defaults), { name: 'Basic Provisions', use: (game) => {
+                const foodAmount = rollRange(3, 10);
+                const waterAmount = rollRange(3, 10);
+                game.party.food += foodAmount;
+                game.party.water += waterAmount;
+                game.log('Your party opens the provisions and receives ' + foodAmount + ' food and ' + waterAmount + ' water.');
             } });
         this.boostWeapon = Object.assign(Object.assign({}, defaults), { name: 'Boost Weapon', use: (game) => {
                 game.party.weaponPoints += 1;

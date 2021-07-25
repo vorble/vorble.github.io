@@ -76,6 +76,16 @@ game.registerLevel({
                 game.log('Your party receives 1 ' + game.party.items[name].name + '.');
             }
         }
+        function lootEquipmentBoost(game) {
+            const name = rollChoice(ITEM_NAMES_EQUIPMENT_BOOST);
+            game.party.items[name].quantity += 1;
+            game.log('Your party receives 1 ' + game.party.items[name].name + '.');
+        }
+        function lootStatBoost(game) {
+            const name = rollChoice(ITEM_NAMES_STAT_BOOST);
+            game.party.items[name].quantity += 1;
+            game.log('Your party receives 1 ' + game.party.items[name].name + '.');
+        }
         function rollLoseEquipment(game) {
             const weaponChoices = EQ_FINE_CATEGORIES
                 .filter((cat) => game.party.inventoryWeapon[cat] > 0)
@@ -87,6 +97,22 @@ game.registerLevel({
             c.inv[c.cat] -= 1;
             game.log('You lose 1 ' + c.cat + ' ' + c.typ + '.');
         }
+        town.hooks = {
+            onSacrifice: (game) => {
+                game.adjustAlignment(1); // The town has a rich history of sacrificial activity.
+                if (rollDie(20) <= 5) {
+                    game.log('The townsfolk notice your activities and quietly approve.');
+                    game.adjustAlignment(3);
+                }
+            },
+            onAnimate: (game) => {
+                game.adjustAlignment(-3); // But the town frowns upon dark magic.
+                if (rollDie(20) <= 4) {
+                    game.log('The townsfolk are disgusted with your party\'s use of dark magic.');
+                    game.adjustAlignment(-4);
+                }
+            },
+        };
         town.events = [
             {
                 name: 'A Faux Pas',
@@ -215,7 +241,7 @@ game.registerLevel({
             },
             {
                 name: 'Unwelcome Here',
-                weight: 1,
+                weight: 5,
                 predicate: (game) => game.town.alignment <= -20,
                 action: (game) => {
                     const roll = (rollDie(20)
@@ -440,6 +466,8 @@ game.registerLevel({
                         game.log(action.prefix + action.good);
                         if (++townState.snuffSuccess >= 10) {
                             game.log('Your party takes a look around at the destroyed camp. The opposing party has been vanquished.');
+                            lootEquipmentBoost(game);
+                            lootStatBoost(game);
                             loot(game);
                             loot(game);
                             loot(game);
@@ -739,10 +767,11 @@ game.registerLevel({
                                 weight: 1,
                                 action: (game) => {
                                     game.log('The magma elemental lifts its leg high and stops on the ground creating a shock wave! The party\'s dexterity decreases by 2.');
-                                    game.party.dexmod += -2;
-                                    game.setTimeout(() => {
-                                        game.party.dexmod += 2;
-                                    }, { term: 1 });
+                                    game.party.status.addStatus(game, {
+                                        name: 'Off-balance',
+                                        term: 1,
+                                        dexmod: -2,
+                                    });
                                 },
                             },
                         ],

@@ -24,10 +24,6 @@ declare class Game {
     textLog: Array<string>;
     levels: Array<Level>;
     level: number;
-    timeouts: Array<{
-        callback: () => void;
-        clock: Clock;
-    }>;
     boss: null | Enemy;
     enemy: null | Enemy;
     events: Array<GameEvent>;
@@ -85,7 +81,6 @@ declare class Game {
     getSkillCost(skill: SkillIdentifier): number;
     canBuySkill(skill: SkillIdentifier): boolean;
     buySkill(skill: SkillIdentifier): void;
-    setTimeout(callback: () => void, clock: ClockInput): void;
 }
 declare let game: Game;
 declare function gameStart(): void;

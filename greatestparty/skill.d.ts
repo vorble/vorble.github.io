@@ -1,4 +1,4 @@
-declare type SkillIdentifier = 'initiative' | 'inspire' | 'sacrifice' | 'conscript' | 'animate' | 'sabotage' | 'acclaim';
+declare type SkillIdentifier = 'initiative' | 'inspire' | 'sacrifice' | 'conscript' | 'animate' | 'sabotage' | 'acclaim' | 'rationing';
 declare const SKILLS: Array<SkillIdentifier>;
 interface Skill extends ClockActions {
     level: number;
@@ -16,5 +16,6 @@ declare class Skills {
     animate: Skill;
     sabotage: Skill;
     acclaim: Skill;
+    rationing: Skill;
     constructor();
 }

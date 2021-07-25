@@ -163,6 +163,10 @@ declare class UISkills {
     acclaimBuy: HTMLElement;
     acclaimLevel: HTMLElement;
     acclaimBuyButton: HTMLButtonElement;
+    rationingEntry: HTMLElement;
+    rationingBuy: HTMLElement;
+    rationingLevel: HTMLElement;
+    rationingBuyButton: HTMLButtonElement;
     constructor(game: Game);
     show(): void;
 }
@@ -192,6 +196,7 @@ declare class UIItems {
     potionEnrage: UIItemsEntry;
     gobletBlood: UIItemsEntry;
     pocketAutomaton: UIItemsEntry;
+    basicProvisions: UIItemsEntry;
     boostWeapon: UIItemsEntry;
     boostArmor: UIItemsEntry;
     constructor(game: Game);

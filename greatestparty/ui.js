@@ -359,36 +359,54 @@ class UIEquipment {
         this.weaponConfig.blunt[0].disabled = weaponPhysicalMax < 1;
         this.weaponConfig.blunt[1].disabled = weaponPhysicalMax < 2;
         this.weaponConfig.blunt[2].disabled = weaponPhysicalMax < 3;
+        this.weaponConfig.blunt[0].style.opacity = weaponPhysicalMax < 1 ? '50%' : '';
+        this.weaponConfig.blunt[1].style.opacity = weaponPhysicalMax < 2 ? '50%' : '';
+        this.weaponConfig.blunt[2].style.opacity = weaponPhysicalMax < 3 ? '50%' : '';
         this.weaponConfig.slice[0].checked = weaponConfig.physical >= 1;
         this.weaponConfig.slice[1].checked = weaponConfig.physical >= 2;
         this.weaponConfig.slice[2].checked = weaponConfig.physical >= 3;
         this.weaponConfig.slice[0].disabled = weaponPhysicalMax < 1;
         this.weaponConfig.slice[1].disabled = weaponPhysicalMax < 2;
         this.weaponConfig.slice[2].disabled = weaponPhysicalMax < 3;
+        this.weaponConfig.slice[0].style.opacity = weaponPhysicalMax < 1 ? '50%' : '';
+        this.weaponConfig.slice[1].style.opacity = weaponPhysicalMax < 2 ? '50%' : '';
+        this.weaponConfig.slice[2].style.opacity = weaponPhysicalMax < 3 ? '50%' : '';
         this.weaponConfig.dark[0].checked = weaponConfig.magical <= -1;
         this.weaponConfig.dark[1].checked = weaponConfig.magical <= -2;
         this.weaponConfig.dark[2].checked = weaponConfig.magical <= -3;
         this.weaponConfig.dark[0].disabled = weaponMagicalMax < 1;
         this.weaponConfig.dark[1].disabled = weaponMagicalMax < 2;
         this.weaponConfig.dark[2].disabled = weaponMagicalMax < 3;
+        this.weaponConfig.dark[0].style.opacity = weaponMagicalMax < 1 ? '50%' : '';
+        this.weaponConfig.dark[1].style.opacity = weaponMagicalMax < 2 ? '50%' : '';
+        this.weaponConfig.dark[2].style.opacity = weaponMagicalMax < 3 ? '50%' : '';
         this.weaponConfig.light[0].checked = weaponConfig.magical >= 1;
         this.weaponConfig.light[1].checked = weaponConfig.magical >= 2;
         this.weaponConfig.light[2].checked = weaponConfig.magical >= 3;
         this.weaponConfig.light[0].disabled = weaponMagicalMax < 1;
         this.weaponConfig.light[1].disabled = weaponMagicalMax < 2;
         this.weaponConfig.light[2].disabled = weaponMagicalMax < 3;
+        this.weaponConfig.light[0].style.opacity = weaponMagicalMax < 1 ? '50%' : '';
+        this.weaponConfig.light[1].style.opacity = weaponMagicalMax < 2 ? '50%' : '';
+        this.weaponConfig.light[2].style.opacity = weaponMagicalMax < 3 ? '50%' : '';
         this.weaponConfig.fire[0].checked = weaponConfig.elemental <= -1;
         this.weaponConfig.fire[1].checked = weaponConfig.elemental <= -2;
         this.weaponConfig.fire[2].checked = weaponConfig.elemental <= -3;
         this.weaponConfig.fire[0].disabled = weaponElementalMax < 1;
         this.weaponConfig.fire[1].disabled = weaponElementalMax < 2;
         this.weaponConfig.fire[2].disabled = weaponElementalMax < 3;
+        this.weaponConfig.fire[0].style.opacity = weaponElementalMax < 1 ? '50%' : '';
+        this.weaponConfig.fire[1].style.opacity = weaponElementalMax < 2 ? '50%' : '';
+        this.weaponConfig.fire[2].style.opacity = weaponElementalMax < 3 ? '50%' : '';
         this.weaponConfig.ice[0].checked = weaponConfig.elemental >= 1;
         this.weaponConfig.ice[1].checked = weaponConfig.elemental >= 2;
         this.weaponConfig.ice[2].checked = weaponConfig.elemental >= 3;
         this.weaponConfig.ice[0].disabled = weaponElementalMax < 1;
         this.weaponConfig.ice[1].disabled = weaponElementalMax < 2;
         this.weaponConfig.ice[2].disabled = weaponElementalMax < 3;
+        this.weaponConfig.ice[0].style.opacity = weaponElementalMax < 1 ? '50%' : '';
+        this.weaponConfig.ice[1].style.opacity = weaponElementalMax < 2 ? '50%' : '';
+        this.weaponConfig.ice[2].style.opacity = weaponElementalMax < 3 ? '50%' : '';
         let armorPhysicalMax = game.party.armorPoints - Math.abs(armorConfig.magical) - Math.abs(armorConfig.elemental);
         let armorMagicalMax = game.party.armorPoints - Math.abs(armorConfig.physical) - Math.abs(armorConfig.elemental);
         let armorElementalMax = game.party.armorPoints - Math.abs(armorConfig.physical) - Math.abs(armorConfig.magical);
@@ -398,36 +416,54 @@ class UIEquipment {
         this.armorConfig.blunt[0].disabled = armorPhysicalMax < 1;
         this.armorConfig.blunt[1].disabled = armorPhysicalMax < 2;
         this.armorConfig.blunt[2].disabled = armorPhysicalMax < 3;
+        this.armorConfig.blunt[0].style.opacity = armorPhysicalMax < 1 ? '50%' : '';
+        this.armorConfig.blunt[1].style.opacity = armorPhysicalMax < 2 ? '50%' : '';
+        this.armorConfig.blunt[2].style.opacity = armorPhysicalMax < 3 ? '50%' : '';
         this.armorConfig.slice[0].checked = armorConfig.physical >= 1;
         this.armorConfig.slice[1].checked = armorConfig.physical >= 2;
         this.armorConfig.slice[2].checked = armorConfig.physical >= 3;
         this.armorConfig.slice[0].disabled = armorPhysicalMax < 1;
         this.armorConfig.slice[1].disabled = armorPhysicalMax < 2;
         this.armorConfig.slice[2].disabled = armorPhysicalMax < 3;
+        this.armorConfig.slice[0].style.opacity = armorPhysicalMax < 1 ? '50%' : '';
+        this.armorConfig.slice[1].style.opacity = armorPhysicalMax < 2 ? '50%' : '';
+        this.armorConfig.slice[2].style.opacity = armorPhysicalMax < 3 ? '50%' : '';
         this.armorConfig.dark[0].checked = armorConfig.magical <= -1;
         this.armorConfig.dark[1].checked = armorConfig.magical <= -2;
         this.armorConfig.dark[2].checked = armorConfig.magical <= -3;
         this.armorConfig.dark[0].disabled = armorMagicalMax < 1;
         this.armorConfig.dark[1].disabled = armorMagicalMax < 2;
         this.armorConfig.dark[2].disabled = armorMagicalMax < 3;
+        this.armorConfig.dark[0].style.opacity = armorMagicalMax < 1 ? '50%' : '';
+        this.armorConfig.dark[1].style.opacity = armorMagicalMax < 2 ? '50%' : '';
+        this.armorConfig.dark[2].style.opacity = armorMagicalMax < 3 ? '50%' : '';
         this.armorConfig.light[0].checked = armorConfig.magical >= 1;
         this.armorConfig.light[1].checked = armorConfig.magical >= 2;
         this.armorConfig.light[2].checked = armorConfig.magical >= 3;
         this.armorConfig.light[0].disabled = armorMagicalMax < 1;
         this.armorConfig.light[1].disabled = armorMagicalMax < 2;
         this.armorConfig.light[2].disabled = armorMagicalMax < 3;
+        this.armorConfig.light[0].style.opacity = armorMagicalMax < 1 ? '50%' : '';
+        this.armorConfig.light[1].style.opacity = armorMagicalMax < 2 ? '50%' : '';
+        this.armorConfig.light[2].style.opacity = armorMagicalMax < 3 ? '50%' : '';
         this.armorConfig.fire[0].checked = armorConfig.elemental <= -1;
         this.armorConfig.fire[1].checked = armorConfig.elemental <= -2;
         this.armorConfig.fire[2].checked = armorConfig.elemental <= -3;
         this.armorConfig.fire[0].disabled = armorElementalMax < 1;
         this.armorConfig.fire[1].disabled = armorElementalMax < 2;
         this.armorConfig.fire[2].disabled = armorElementalMax < 3;
+        this.armorConfig.fire[0].style.opacity = armorElementalMax < 1 ? '50%' : '';
+        this.armorConfig.fire[1].style.opacity = armorElementalMax < 2 ? '50%' : '';
+        this.armorConfig.fire[2].style.opacity = armorElementalMax < 3 ? '50%' : '';
         this.armorConfig.ice[0].checked = armorConfig.elemental >= 1;
         this.armorConfig.ice[1].checked = armorConfig.elemental >= 2;
         this.armorConfig.ice[2].checked = armorConfig.elemental >= 3;
         this.armorConfig.ice[0].disabled = armorElementalMax < 1;
         this.armorConfig.ice[1].disabled = armorElementalMax < 2;
         this.armorConfig.ice[2].disabled = armorElementalMax < 3;
+        this.armorConfig.ice[0].style.opacity = armorElementalMax < 1 ? '50%' : '';
+        this.armorConfig.ice[1].style.opacity = armorElementalMax < 2 ? '50%' : '';
+        this.armorConfig.ice[2].style.opacity = armorElementalMax < 3 ? '50%' : '';
     }
 }
 class UITown {
@@ -749,6 +785,13 @@ class UISkills {
         this.acclaimBuyButton.onclick = (e) => {
             game.buySkill('acclaim');
         };
+        this.rationingEntry = getElementById('panel-skills-rationing');
+        this.rationingBuy = getElementById('panel-skills-rationing-buy-cost-value');
+        this.rationingLevel = getElementById('panel-skills-rationing-level-value');
+        this.rationingBuyButton = getElementByIdAsType('panel-skills-rationing-buy-button', HTMLButtonElement);
+        this.rationingBuyButton.onclick = (e) => {
+            game.buySkill('rationing');
+        };
     }
     show() {
         {
@@ -801,6 +844,13 @@ class UISkills {
             this.acclaimBuyButton.disabled = !this.game.canBuySkill('acclaim');
             this.acclaimEntry.style.display = this.game.party.questsCompleted < this.game.party.skills.acclaim.unlockAtCompletedQuests ? 'none' : '';
         }
+        {
+            const cost = this.game.getSkillCost('rationing');
+            this.rationingBuy.innerText = '' + cost;
+            this.rationingLevel.innerText = '' + this.game.party.skills.rationing.level;
+            this.rationingBuyButton.disabled = !this.game.canBuySkill('rationing');
+            this.rationingEntry.style.display = this.game.party.questsCompleted < this.game.party.skills.rationing.unlockAtCompletedQuests ? 'none' : '';
+        }
     }
 }
 class UIItemsEntry {
@@ -831,6 +881,7 @@ class UIItems {
         this.potionEnrage = new UIItemsEntry('potionEnrage');
         this.gobletBlood = new UIItemsEntry('gobletBlood');
         this.pocketAutomaton = new UIItemsEntry('pocketAutomaton');
+        this.basicProvisions = new UIItemsEntry('basicProvisions');
         this.boostWeapon = new UIItemsEntry('boostWeapon');
         this.boostArmor = new UIItemsEntry('boostArmor');
         for (const name of ITEM_NAMES) {
