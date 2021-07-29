@@ -36,6 +36,9 @@ function cheatStuff() {
 function cheatParty() {
     game.party.size += 10;
 }
+function cheatQuests() {
+    game.party.questsCompleted += 2000;
+}
 function cheatSTR(value) { game.party.strbase = value == null ? 18 : value; }
 function cheatDEX(value) { game.party.dexbase = value == null ? 18 : value; }
 function cheatCON(value) { game.party.conbase = value == null ? 18 : value; }

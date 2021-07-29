@@ -135,6 +135,10 @@ game.registerLevel({
                 townState.ticksMaybeInflictIslandCurse = rollDie(TICKS_PER_TOCK * 5);
             },
             onTownDepart: (game) => {
+                if (game.party.status.islandCurse.active) {
+                    game.log('Your party feels the curse being lifted.');
+                    game.party.status.islandCurse.active = false;
+                }
             },
             doTickActions: (game) => {
                 ++townState.ticksReturnBodies;
@@ -163,7 +167,7 @@ game.registerLevel({
                 }
             },
         };
-        // Town events occur periodically on their own, independly from quest events.
+        // Town events occur periodically on their own, independently from quest events.
         town.events = [
             {
                 name: 'Call of the Sea',
