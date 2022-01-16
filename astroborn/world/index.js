@@ -54,4 +54,3 @@ export function makePickupItem(item, items, stateItemsKey) {
             },
         }];
 }
-//# sourceMappingURL=index.js.map

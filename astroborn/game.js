@@ -296,4 +296,3 @@ export class Game {
         this.updateActions(/*resetPage=*/ true);
     }
 }
-//# sourceMappingURL=game.js.map

@@ -56,4 +56,3 @@ function lookupLangID(lang) {
     return LANGS[Math.floor(Math.random() * LANGS.length)];
 }
 export let langID = lookupLangID(window.navigator.languages);
-//# sourceMappingURL=lang.js.map
