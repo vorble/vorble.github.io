@@ -8,7 +8,6 @@ export function state() {
     return {
         items: stateItems(),
         bed_made: false,
-        fireflies_caught: 0,
     };
 }
 export const rooms = [];
@@ -147,7 +146,7 @@ rooms.push({
     }),
     description: langmap({
         enus: `There is a worn, sandy walkway through the grassy plot, running between a larger causeway and a series of row houses.
-    The grass is short and worn from foot traffic. Greg and Maun are raucously joking in the lawn.
+    The grass is short and worn from foot traffic.
     A small, traveled opening is on the tree line.`,
     }),
     things: [
@@ -172,6 +171,34 @@ rooms.push({
             description: langmap({
                 enus: `It's a series of row houses built from dark wooden planks, but are greyed and faded from years in the sun.`,
             }),
+        },
+        {
+            // TODO: Greg and Maun talking. Unfinished.
+            name: langmap({
+                enus: `Greg and Maun`,
+            }),
+            isHereText: langmap({
+                enus: `Greg and Maun are raucously joking in the lawn.`,
+            }),
+            description: langmap({
+                enus: `Greg and Maun are riled up on the lawn, talking and joking with smiles on their faces.`,
+            }),
+            talk: {
+                text: langmap({
+                    enus: `Greg and Maun`,
+                }),
+                action: [
+                    {
+                        text: langmap({
+                            enus: `Funny?`,
+                        }),
+                        action: (state) => langmap({
+                            enus: `You ask about what's so funny. Greg replies with a smile,
+              "Maun was telling me about the woodcutting he was doing yesterday."`,
+                        }),
+                    },
+                ],
+            },
         },
     ],
 });

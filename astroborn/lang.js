@@ -41,6 +41,13 @@ export function langmap(langs) {
 export function langmapFull(langs) {
     return new LangMap(langs);
 }
+export function joinSentences(langID, items) {
+    switch (langID) {
+        case 'enus': return items.join(' ');
+        case 'dede': return items.join(' ');
+        case 'zhcn': return items.join();
+    }
+}
 function lookupLangID(lang) {
     if (!Array.isArray(lang)) {
         lang = [lang];

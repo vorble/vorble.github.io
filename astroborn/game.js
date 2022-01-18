@@ -1,6 +1,7 @@
 import { ButtonBar, ButtonGrid } from './buttons.js';
 import * as lang from './lang.js';
 import { LangMap } from './lang.js';
+import * as quest from './quest/index.js';
 import { Scene } from './scene.js';
 import { strings } from './strings.js';
 import * as world from './world/index.js';
@@ -12,6 +13,7 @@ export class Game {
         this.callPassState = 0;
         this.state = {
             ...world.state(),
+            quest: quest.state(),
             player: {
                 roomNo: world.startRoomNo,
                 items: [],
@@ -41,13 +43,20 @@ export class Game {
         return room;
     }
     getRoomDescription(room) {
-        return typeof room.description === 'function' ? room.description(this.state) : room.description;
+        const description = (typeof room.description === 'function' ? room.description(this.state) : room.description).get(lang.langID);
+        const things = this.getRoomThings(room);
+        const extra = [];
+        for (const thing of things) {
+            if (thing.isHereText != null) {
+                extra.push(thing.isHereText.get(lang.langID));
+            }
+        }
+        return lang.joinSentences(lang.langID, [description, ...extra]);
     }
     getRoomThings(room) {
-        if (typeof room.things === 'function') {
-            return room.things(this.state);
-        }
-        return room.things;
+        let things = typeof room.things === 'function' ? room.things(this.state) : room.things;
+        let thingsForQuests = quest.getThings(this.state, room.roomNo);
+        return things.concat(thingsForQuests);
     }
     _callPassExit(exit) {
         const expectation = this.callPassState;
@@ -98,7 +107,7 @@ export class Game {
             result.do = this._callPassAction(action);
         }
         else if (action instanceof LangMap) {
-            result.do = () => this._callPassNarrate(action.get(lang.langID));
+            result.do = this._callPassNarrate(action.get(lang.langID));
         }
         else if (Array.isArray(action)) {
             result.options = action.map((action) => this._makeMenu(action));
@@ -273,7 +282,7 @@ export class Game {
     doLook() {
         const room = this.getPlayerRoom();
         const description = this.getRoomDescription(room);
-        this.narrate(description.get(lang.langID));
+        this.narrate(description);
     }
     doTakeExit(exit) {
         if (typeof exit.toRoomNo === 'number') {
