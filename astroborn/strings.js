@@ -29,6 +29,13 @@ class StringsActions {
     }
 }
 class StringsButtonGrid {
+    get sceneNext() {
+        switch (lang.langID) {
+            case 'enus': return 'Next';
+            case 'dede': return ''; // LANG-DEDE
+            case 'zhcn': return ''; // LANG-ZHCN
+        }
+    }
     get look() {
         switch (lang.langID) {
             case 'enus': return 'Look';

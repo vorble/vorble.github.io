@@ -31,6 +31,7 @@ export class Game {
         };
         this.bar = new ButtonBar();
         this.grid = new ButtonGrid(this);
+        this.activeScene = null;
         this.updateActions(/*resetPage=*/ true);
         this.narrate(strings.welcomeMessage);
         this.doLook();
@@ -196,35 +197,50 @@ export class Game {
                 talk.push(this._makeMenu(thing.talk));
             }
         }
+        const sceneActive = this.activeScene != null;
         if (resetPage) {
-            this.bar.setActionsAndPage(go, 0);
+            this.bar.setActionsAndPage(sceneActive ? [] : go, 0);
         }
         else {
-            this.bar.setActions(go);
+            this.bar.setActions(sceneActive ? [] : go);
         }
-        this.grid.setLayout({ lookAt, use, talk, get, items }, resetPage);
+        this.grid.setLayout({ lookAt, use, talk, get, items, sceneActive }, resetPage);
+    }
+    write(text) {
+        const story = document.getElementsByClassName('story')[0];
+        text = text.replace(/\s+/g, ' ').replace(/\r?\n/g, ' ');
+        const storyElement = document.createElement('div');
+        storyElement.classList.add('story_element');
+        storyElement.innerText = text;
+        story.appendChild(storyElement);
+        storyElement.scrollIntoView();
     }
     narrate(narration) {
-        const story = document.getElementsByClassName('story')[0];
-        function write(text) {
-            text = text.replace(/\s+/g, ' ').replace(/\r?\n/g, ' ');
-            const storyElement = document.createElement('div');
-            storyElement.classList.add('story_element');
-            storyElement.innerText = text;
-            story.appendChild(storyElement);
-            storyElement.scrollIntoView();
-        }
         if (narration instanceof Scene) {
-            alert('Please implement scenes.');
-            // TODO
+            while (this.activeScene != null) {
+                this.progressScene();
+            }
+            this.activeScene = narration;
+            this.progressScene();
         }
         else if (Array.isArray(narration)) {
             for (const stanza of narration) {
-                write(stanza);
+                this.write(stanza);
             }
         }
         else {
-            write(narration);
+            this.write(narration);
+        }
+    }
+    progressScene() {
+        if (this.activeScene != null) {
+            if (this.activeScene.hasMore()) {
+                this.write(this.activeScene.next());
+            }
+            if (!this.activeScene.hasMore()) {
+                this.activeScene = null;
+            }
+            this.updateActions(/*resetPage=*/ true);
         }
     }
     doEquip(item) {

@@ -1,4 +1,5 @@
 import { makePickupItem, langmap } from '../index.js';
+import { Scene } from '../../scene.js';
 function stateItems() {
     return {
         windBandana: false,
@@ -40,8 +41,6 @@ rooms.push({
     name: langmap({
         enus: `Row Room`,
     }),
-    // TODO: Make it so you can play around with some of the features of the room, like maybe
-    // you can hear through the wall or peek under something.
     description: langmap({
         enus: `You are in dimly lit, permanent room built from fine, dark planks that let in only
     tendrils of light. A bed, some racks, and drawers line the walls. A thatch door is
@@ -117,7 +116,7 @@ rooms.push({
                 enus: `Drawer`,
             }),
             description: langmap({
-                enus: `It's a worn, wooden set of drawers that has been used by many over the years.`,
+                enus: `It's a worn and marked set of wooden drawers that has been used by many over the years.`,
             }),
         },
         {
@@ -145,9 +144,9 @@ rooms.push({
         enus: `Row Lawn`,
     }),
     description: langmap({
-        enus: `There is a worn, sandy walkway through the grassy plot, running between a larger causeway and a series of row houses.
-    The grass is short and worn from foot traffic.
-    A small, traveled opening is on the tree line.`,
+        enus: `There is a worn, sandy walkway through the grassy plot, running between a larger
+    causeway and a series of faded row houses made of wood. The grass is short and worn from foot traffic.
+    A small, traveled opening is on the tree line past the meadow.`,
     }),
     things: [
         {
@@ -166,6 +165,20 @@ rooms.push({
         },
         {
             name: langmap({
+                enus: `Meadow`,
+            }),
+            description: langmap({
+                enus: `A path leads to a meadow of long grass leading toward the forest.`,
+            }),
+            exit: {
+                useNarration: langmap({
+                    enus: `You go across the lawn and start to push your way through the tall grass.`,
+                }),
+                toRoomNo: 2002,
+            },
+        },
+        {
+            name: langmap({
                 enus: `Row Houses`,
             }),
             description: langmap({
@@ -173,7 +186,6 @@ rooms.push({
             }),
         },
         {
-            // TODO: Greg and Maun talking. Unfinished.
             name: langmap({
                 enus: `Greg and Maun`,
             }),
@@ -181,7 +193,7 @@ rooms.push({
                 enus: `Greg and Maun are raucously joking in the lawn.`,
             }),
             description: langmap({
-                enus: `Greg and Maun are riled up on the lawn, talking and joking with smiles on their faces.`,
+                enus: `Greg and Maun, young men, are riled up on the lawn, talking and joking with smiles on their faces.`,
             }),
             talk: {
                 text: langmap({
@@ -193,12 +205,55 @@ rooms.push({
                             enus: `Funny?`,
                         }),
                         action: (state) => langmap({
-                            enus: `You ask about what's so funny. Greg replies with a smile,
-              "Maun was telling me about the woodcutting he was doing yesterday."`,
+                            enus: new Scene([
+                                `You ask about what's so funny. Greg replies with a smile,
+                "Maun was telling me the gopher he saw cutting wood yesterday."`,
+                                `Maun interjects, "Looking at me like this:" He tilts his head and
+                exposes his front teeth, raising his left eyebrow.`,
+                                `Greg and Maun continue their playful banter and make other animalistic
+                motions toward each other.`
+                            ]),
                         }),
                     },
                 ],
             },
+        },
+        // TODO: Exit to common area.
+        // TODO: Looking at things around.
+        // TODO: Way to get behind row house. Close to the latrine.
+    ],
+});
+rooms.push({
+    roomNo: 2002,
+    name: langmap({
+        enus: `Meadow`,
+    }),
+    description: langmap({
+        enus: `You are in a meadow of tall grass and wildflowers situated between the houses on the outskirts of town and a forest.
+    The pathway is obvious, but not so worn down as to trample the grass completely.`,
+    }),
+    things: [
+        {
+            name: langmap({
+                enus: `Houses`,
+            }),
+            description: langmap({
+                enus: `The pathway leads toward the lawn and some houses not far off.`,
+            }),
+            exit: {
+                useNarration: langmap({
+                    enus: `You push through the tall grass toward the houses and reach the lawn.`,
+                }),
+                toRoomNo: 2001,
+            },
+        },
+        {
+            name: langmap({
+                enus: `Grass`,
+            }),
+            description: langmap({
+                enus: `The grass moves gently with a hiss as the waves of wind draw over it.`,
+            }),
         },
     ],
 });

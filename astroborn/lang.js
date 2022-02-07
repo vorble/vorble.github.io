@@ -7,7 +7,7 @@
 //   lm.get('dede') -> 'Hallo.'
 //   lm.get('enus') -> 'Hallo.' // Fallback to first language given during creation.
 //   lm.get('zhcn') -> '你好.'
-const LANGS = ['dede', 'enus', 'zhcn'];
+export const LANGS = ['dede', 'enus', 'zhcn'];
 export class LangMap {
     constructor(langs) {
         let def;
@@ -53,14 +53,21 @@ function lookupLangID(lang) {
         lang = [lang];
     }
     for (const l of lang) {
-        switch (l) {
-            case 'en-US': return 'enus';
-            case 'de-DE': return 'dede';
-            case 'zh-CN': return 'zhcn';
+        switch (l.toLowerCase()) {
+            case 'en-us': return 'enus';
+            case 'de-de': return 'dede';
+            case 'zh-cn': return 'zhcn';
         }
     }
     console.error(`Couldn\'t map language ${lang}! Spinning the wheel...`);
+    window.location.hash = lang;
     return LANGS[Math.floor(Math.random() * LANGS.length)];
 }
-export let langID = lookupLangID(window.navigator.languages);
-window.location.hash = window.navigator.languages.toString();
+export function toLangID(langID) {
+    if (LANGS.indexOf(langID) < 0) {
+        return false;
+    }
+    return langID;
+}
+// When not running in the browser, it's running the build tools which is supported only in English.
+export let langID = typeof window !== 'undefined' ? lookupLangID(window.navigator.languages) : 'enus';
