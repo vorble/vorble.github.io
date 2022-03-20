@@ -1,323 +1,509 @@
-import { ButtonBar, ButtonGrid } from './buttons.js';
-import * as lang from './lang.js';
-import { LangMap } from './lang.js';
-import * as quest from './quest/index.js';
-import { Scene } from './scene.js';
-import { strings } from './strings.js';
-import * as world from './world/index.js';
-export function stateAddItem(state, itemNo) {
-    state.player.items.push(itemNo);
+import { Battle } from './battle.js';
+import { playerMakeDefault, playerResourcesInput, playerCalculate, getPlayerLevelEntry } from './player.js';
+import { UI } from './ui.js';
+import { World, getZoneNoFromRoomNo } from './world.js';
+class GameTimer {
+    constructor() {
+        this.interval = 0;
+        this.action = () => { };
+    }
+    start(action) {
+        this.interval = setInterval(action, 500);
+    }
+    stop() {
+        if (this.interval != 0) {
+            clearInterval(this.interval);
+            this.interval = 0;
+            this.action = () => { };
+        }
+    }
+}
+// Quest variables are prefixed with @ and are accessible through the entire game and should
+// be used to guide the overarching story.
+// Zone variables are prefixed with % and are accessible from any room in that zone. These
+// should be used to give life to the zone or to control aspects only relevant to the zone.
+// Room variables are prefixed with $ and are accessible only from one room. These should be
+// used for persistent room states that should persist when the player returns.
+// Ephemeral variables have no prefix and are accessible only from one room for the time that
+// the player is in the room. These are cleared as the player travels between rooms. These
+// should be used for non-persistent state in the room (ambiance).
+class GameProgressTotal {
+    constructor() {
+        this.questValues = new Map();
+        this.zoneValues = new Map();
+        this.roomValues = new Map();
+        this.ephemeralValues = new Map();
+    }
+    clearEphemeral() {
+        this.ephemeralValues.clear();
+    }
+    static isQuestVariable(name) {
+        return name.startsWith('@');
+    }
+    static isZoneVariable(name) {
+        return name.startsWith('%');
+    }
+    static isRoomVariable(name) {
+        return name.startsWith('$');
+    }
+    static isEphemeralVariable(name) {
+        return /^[a-zA-Z0-9_]/.test(name);
+    }
+    getQuestValue(name) {
+        const result = this.questValues.get(name);
+        return result == null ? 0 : result;
+    }
+    getZoneValue(zoneNo, name) {
+        const zoneValues = this.zoneValues.get(zoneNo);
+        if (zoneValues == null) {
+            return 0;
+        }
+        const result = zoneValues.get(name);
+        return result == null ? 0 : result;
+    }
+    getRoomValue(roomNo, name) {
+        const roomValues = this.roomValues.get(roomNo);
+        if (roomValues == null) {
+            return 0;
+        }
+        const result = roomValues.get(name);
+        return result == null ? 0 : result;
+    }
+    getEphemeral(name) {
+        const result = this.ephemeralValues.get(name);
+        return result == null ? 0 : result;
+    }
+    setQuestValue(name, value) {
+        this.questValues.set(name, value);
+    }
+    setZoneValue(zoneNo, name, value) {
+        let zoneValues = this.zoneValues.get(zoneNo);
+        if (zoneValues == null) {
+            this.zoneValues.set(zoneNo, zoneValues = new Map());
+        }
+        zoneValues.set(name, value);
+    }
+    setRoomValue(roomNo, name, value) {
+        let roomValues = this.roomValues.get(roomNo);
+        if (roomValues == null) {
+            this.roomValues.set(roomNo, roomValues = new Map());
+        }
+        roomValues.set(name, value);
+    }
+    setEphemeral(name, value) {
+        this.ephemeralValues.set(name, value);
+    }
+    getForRoom(roomNo) {
+        return {
+            get: (name) => {
+                if (GameProgressTotal.isQuestVariable(name)) {
+                    return this.getQuestValue(name);
+                }
+                else if (GameProgressTotal.isZoneVariable(name)) {
+                    return this.getZoneValue(getZoneNoFromRoomNo(roomNo), name);
+                }
+                else if (GameProgressTotal.isRoomVariable(name)) {
+                    return this.getRoomValue(roomNo, name);
+                }
+                else if (GameProgressTotal.isEphemeralVariable(name)) {
+                    return this.getEphemeral(name);
+                }
+                throw new Error(`Invalid variable name "${name}".`);
+            },
+            set: (name, value) => {
+                if (GameProgressTotal.isQuestVariable(name)) {
+                    return this.setQuestValue(name, value);
+                }
+                else if (GameProgressTotal.isZoneVariable(name)) {
+                    return this.setZoneValue(getZoneNoFromRoomNo(roomNo), name, value);
+                }
+                else if (GameProgressTotal.isRoomVariable(name)) {
+                    return this.setRoomValue(roomNo, name, value);
+                }
+                else if (GameProgressTotal.isEphemeralVariable(name)) {
+                    return this.setEphemeral(name, value);
+                }
+                throw new Error(`Invalid variable name "${name}".`);
+            }
+        };
+    }
 }
 export class Game {
     constructor() {
-        this.callPassState = 0;
-        this.state = {
-            ...world.state(),
-            quest: quest.state(),
-            player: {
-                roomNo: world.startRoomNo,
-                items: [],
-                equipment: [],
-                health: 10,
-                healthMax: 10,
-                energy: 5,
-                energyMax: 5,
-                attack: 10,
-                defense: 10,
-                power: 10,
-                spirit: 10,
-                tech: 10,
-            },
-        };
-        this.bar = new ButtonBar();
-        this.grid = new ButtonGrid(this);
-        this.activeScene = null;
-        this.updateActions(/*resetPage=*/ true);
-        this.narrate(strings.welcomeMessage);
-        this.doLook();
+        this.ui = new UI();
+        this.timer = new GameTimer();
+        this.state = 'init';
+        this.world = new World();
+        this.roomNo = this.world.getStartingRoomNo();
+        this.progress = new GameProgressTotal();
+        this.battle = null;
+        this.player = playerMakeDefault();
+        this.DEBUG_BATTLE = false;
     }
-    getPlayerRoom() {
-        const room = world.rooms.find((room) => room.roomNo == this.state.player.roomNo);
-        if (!room) {
-            throw new Error(`Player room ${this.state.player.roomNo} not found.`);
-        }
-        return room;
-    }
-    getRoomDescription(room) {
-        const description = (typeof room.description === 'function' ? room.description(this.state) : room.description).get(lang.langID);
-        const things = this.getRoomThings(room);
-        const extra = [];
-        for (const thing of things) {
-            if (thing.isHereText != null) {
-                extra.push(thing.isHereText.get(lang.langID));
-            }
-        }
-        return lang.joinSentences(lang.langID, [description, ...extra]);
-    }
-    getRoomThings(room) {
-        let things = typeof room.things === 'function' ? room.things(this.state) : room.things;
-        let thingsForQuests = quest.getThings(this.state, room.roomNo);
-        return things.concat(thingsForQuests);
-    }
-    _callPassExit(exit) {
-        const expectation = this.callPassState;
-        return () => {
-            if (this.callPassState == expectation) {
-                return this.doTakeExit(exit);
-            }
-        };
-    }
-    _callPassNarrate(narration) {
-        const expectation = this.callPassState;
-        return () => {
-            if (this.callPassState == expectation) {
-                return this.narrate(narration);
-            }
-        };
-    }
-    _callPassEquip(item) {
-        const expectation = this.callPassState;
-        return () => {
-            if (this.callPassState == expectation) {
-                return this.doEquip(item);
-            }
-        };
-    }
-    _callPassUnequip(item) {
-        const expectation = this.callPassState;
-        return () => {
-            if (this.callPassState == expectation) {
-                return this.doUnequip(item);
-            }
-        };
-    }
-    _callPassAction(action) {
-        const expectation = this.callPassState;
-        return () => {
-            if (this.callPassState == expectation) {
-                return this.doAction(action);
-            }
-        };
-    }
-    _makeMenu(menu) {
-        const result = {
-            text: menu.text.get(lang.langID),
-        };
-        const action = menu.action;
-        if (typeof action === 'function') {
-            result.do = this._callPassAction(action);
-        }
-        else if (action instanceof LangMap) {
-            result.do = this._callPassNarrate(action.get(lang.langID));
-        }
-        else if (Array.isArray(action)) {
-            result.options = action.map((action) => this._makeMenu(action));
-        }
-        else {
-            result.options = [this._makeMenu(action)];
-        }
-        return result;
-    }
-    updateActions(resetPage) {
-        this.callPassState = (this.callPassState + 1) % 256;
-        const room = this.getPlayerRoom();
-        const things = this.getRoomThings(room);
-        const lookAt = [];
-        const go = [];
-        const get = [];
-        const use = [];
-        const talk = [];
-        const items = [];
-        const addItem = (itemNo, isEquipped) => {
-            const item = world.getItem(itemNo);
-            if (item == null) {
-                console.warn(`Couldn\'t find item for itemNo=${itemNo}.`);
-                this.state.player.items = this.state.player.items.filter((ino) => ino != itemNo);
-                return;
-            }
-            const options = [
-                {
-                    text: strings.buttonGrid.itemLookAt,
-                    do: this._callPassNarrate(item.description.get(lang.langID)),
+    start() {
+        this.enterState('main_menu');
+        this.ui.reset();
+        this.ui.narration.append(`Welcome to Astroborn!`);
+        this.ui.actions.setActions([
+            {
+                text: 'New Game',
+                action: () => {
+                    this.doNewGame();
                 },
-            ];
-            if (typeof item.use !== 'undefined') {
-                options.push({
-                    text: strings.buttonGrid.itemUse,
-                    do: this._callPassAction(item.use),
-                });
+            },
+            /*
+            {
+              text: 'Load Game',
+              action: () => {
+                this.doLoadGame()
+              },
+            },
+            */
+        ]);
+    }
+    tick() {
+        switch (this.state) {
+            case 'world':
+                this.doStateWorld();
+                break;
+            case 'battle':
+                this.doStateBattle();
+                break;
+        }
+    }
+    enterState(state) {
+        // Stop and restart the timer as necessary. Doing a stop and then a start will
+        // reset the timer so you don't end up entering a battle and unfairly miss a
+        // round if the timer is really close to firing already.
+        const toTimerState = state == 'world' || state == 'battle';
+        this.timer.stop();
+        if (toTimerState) {
+            this.timer.start(() => this.tick());
+        }
+        this.state = state;
+    }
+    enterBattle(battle) {
+        this.battle = new Battle(this, battle);
+        this.enterState('battle');
+        this.updateBattleButtons();
+        // this.battle will take it from here
+    }
+    endBattle(result) {
+        if (this.battle != null) {
+            this.ui.targets.restore(this.battle.postState.targets);
+            this.ui.actions.restore(this.battle.postState.actions);
+            this.enterState(this.battle.postState.state);
+            Object.assign(this.player.resources, playerResourcesInput(this.battle.player.resources));
+            if (result == 'win') {
+                this.ui.narration.append(`You gain ${this.battle.expTally} experience!`);
+                this.player.exp += this.battle.expTally;
+                let nextLevel = getPlayerLevelEntry(this.player.level + 1);
+                while (nextLevel != null && this.player.exp >= nextLevel.exp) {
+                    this.player.level += 1;
+                    // LEVEL UP
+                    // TODO: how to make missing things a type error?
+                    this.ui.narration.append(`Your level has increased to ${this.player.level}!`);
+                    if (nextLevel.hp != this.player.base.hp) {
+                        this.ui.narration.append(`HP has increased by ${nextLevel.hp - this.player.base.hp}!`);
+                    }
+                    this.player.base.hp = nextLevel.hp;
+                    if (nextLevel.mp != this.player.base.mp) {
+                        this.ui.narration.append(`MP has increased by ${nextLevel.mp - this.player.base.mp}!`);
+                    }
+                    this.player.base.mp = nextLevel.mp;
+                    if (nextLevel.pp != this.player.base.pp) {
+                        this.ui.narration.append(`PP has increased by ${nextLevel.pp - this.player.base.pp}!`);
+                    }
+                    this.player.base.pp = nextLevel.pp;
+                    if (nextLevel.off != this.player.base.off) {
+                        this.ui.narration.append(`OFF has increased by ${nextLevel.off - this.player.base.off}!`);
+                    }
+                    this.player.base.def = nextLevel.def;
+                    if (nextLevel.def != this.player.base.def) {
+                        this.ui.narration.append(`DEF has increased by ${nextLevel.def - this.player.base.def}!`);
+                    }
+                    this.player.base.def = nextLevel.def;
+                    if (nextLevel.psy != this.player.base.psy) {
+                        this.ui.narration.append(`PSY has increased by ${nextLevel.psy - this.player.base.psy}!`);
+                    }
+                    this.player.base.psy = nextLevel.psy;
+                    nextLevel = getPlayerLevelEntry(this.player.level + 1);
+                }
+                playerCalculate(this.player);
+                if (this.battle.winAction) {
+                    this.doGameAction(this.battle.winAction());
+                }
+                this.player.resources.hp = Math.max(1, this.player.resources.hp); // TODO: Hackish, need to keep 1 hp to keep alive.
             }
-            if (typeof item.equipmentStats !== 'undefined') {
-                if (isEquipped) {
-                    options.push({
-                        text: strings.buttonGrid.itemUnequip,
-                        do: this._callPassUnequip(item),
-                    });
+            else if (result == 'lose') {
+                if (this.battle.loseAction) {
+                    this.doGameAction(this.battle.loseAction());
                 }
                 else {
-                    options.push({
-                        text: strings.buttonGrid.itemEquip,
-                        do: this._callPassEquip(item),
-                    });
+                    this.doGameOver();
                 }
             }
-            items.push({
-                text: (isEquipped ? '@' : '') + item.name.get(lang.langID),
-                options,
-            });
+            this.battle = null;
+        }
+    }
+    getCurrentRoom() {
+        return this.world.getRoom(this.progress.getForRoom(this.roomNo), this.roomNo);
+    }
+    updateResources() {
+        this.ui.hp.set(this.player.resources.hp, this.player.hp);
+        this.ui.mp.set(this.player.resources.mp, this.player.mp);
+        this.ui.pp.set(this.player.resources.pp, this.player.pp);
+    }
+    updateWorldButtons() {
+        const room = this.getCurrentRoom();
+        const exits = room.things.filter((thing) => thing.exit != null)
+            .map((thing) => {
+            if (thing.exit == null) {
+                throw new Error(`Assertion error, thing.exit is null: thing=${thing}.`);
+            }
+            const exit = thing.exit;
+            return {
+                text: thing.name,
+                action: () => {
+                    this.doWorldTakeExit(exit);
+                },
+            };
+        });
+        this.ui.targets.setTargets(exits);
+        this.ui.actions.setActions([
+            {
+                text: 'Look',
+                action: () => this.doWorldLook(),
+            },
+            {
+                text: 'Look At...',
+                action: () => this.doWorldOpenLookAtMenu(),
+            },
+            {
+                text: 'Use...',
+                action: () => this.doWorldOpenUseMenu(),
+            },
+            {
+                text: 'Take...',
+                action: () => this.doWorldOpenTakeMenu(),
+            },
+            {
+                text: 'Score',
+                action: () => this.doWorldScore(),
+            },
+        ]);
+    }
+    updateBattleButtons() {
+        if (this.battle == null) {
+            throw new Error(`Assertion error, battle is null!`);
+        }
+        this.battle.updateBattleButtons();
+    }
+    runScene(scene) {
+        if (scene.narrations.length == 0) {
+            return;
+        }
+        this.ui.narration.append(scene.narrations[0]);
+        if (scene.narrations.length > 1) {
+            const prevState = this.state;
+            this.enterState('scene');
+            const targets = this.ui.targets.save();
+            const actions = this.ui.actions.save();
+            const blank = { text: '', action: () => { } };
+            let i = 1;
+            this.ui.targets.reset();
+            this.ui.actions.setActions([
+                blank, blank, blank,
+                blank,
+                {
+                    text: 'Next',
+                    action: () => {
+                        this.ui.narration.append(scene.narrations[i]);
+                        ++i;
+                        if (i >= scene.narrations.length) {
+                            this.ui.targets.restore(targets);
+                            this.ui.actions.restore(actions);
+                            this.enterState(prevState);
+                        }
+                    },
+                },
+            ]);
+        }
+    }
+    doNewGame() {
+        this.ui.actions.reset();
+        this.ui.targets.reset();
+        this.ui.narration.reset();
+        this.player = playerMakeDefault();
+        this.enterState('world');
+        this.updateWorldButtons();
+        this.runScene(this.world.getOpeningScene());
+    }
+    /*
+    doLoadGame() {
+    }
+    */
+    doWorldLook() {
+        const room = this.getCurrentRoom();
+        this.ui.narration.append(room.description);
+    }
+    doWorldTakeExit(exit) {
+        this.ui.narration.append(exit.goNarration);
+        if (exit.roomNo != null) {
+            this.roomNo = exit.roomNo;
+            this.progress.clearEphemeral();
+            this.updateWorldButtons();
+        }
+    }
+    doWorldOpenLookAtMenu() {
+        const room = this.getCurrentRoom();
+        const prevState = this.state;
+        this.enterState('world_menu');
+        const targets = this.ui.targets.save();
+        const actions = this.ui.actions.save();
+        const close = () => {
+            this.ui.targets.restore(targets);
+            this.ui.actions.restore(actions);
+            this.enterState(prevState);
         };
-        for (const itemNo of this.state.player.equipment) {
-            addItem(itemNo, true);
-        }
-        for (const itemNo of this.state.player.items) {
-            addItem(itemNo, false);
-        }
-        for (const thing of things) {
-            const name = thing.name.get(lang.langID);
-            lookAt.push({
-                text: name,
-                do: this._callPassNarrate(thing.description.get(lang.langID)),
-            });
-            if (thing.exit) {
-                go.push({
-                    text: name,
-                    do: this._callPassExit(thing.exit),
-                });
-            }
-            if (thing.get) {
-                get.push({
-                    text: name,
-                    do: this._callPassAction(thing.get.action),
-                });
-            }
-            if (thing.use) {
-                use.push(this._makeMenu(thing.use));
-            }
-            if (thing.talk) {
-                talk.push(this._makeMenu(thing.talk));
-            }
-        }
-        const sceneActive = this.activeScene != null;
-        if (resetPage) {
-            this.bar.setActionsAndPage(sceneActive ? [] : go, 0);
-        }
-        else {
-            this.bar.setActions(sceneActive ? [] : go);
-        }
-        this.grid.setLayout({ lookAt, use, talk, get, items, sceneActive }, resetPage);
+        const items = room.things.map((thing) => {
+            return {
+                text: thing.name,
+                action: () => {
+                    close();
+                    this.ui.narration.append(thing.lookAt);
+                },
+            };
+        });
+        this.ui.targets.reset();
+        this.ui.actions.setList(items, close);
     }
-    write(text) {
-        const story = document.getElementsByClassName('story')[0];
-        text = text.replace(/\s+/g, ' ').replace(/\r?\n/g, ' ');
-        const storyElement = document.createElement('div');
-        storyElement.classList.add('story_element');
-        storyElement.innerText = text;
-        story.appendChild(storyElement);
-        storyElement.scrollIntoView();
+    doWorldOpenUseMenu() {
+        const room = this.getCurrentRoom();
+        const prevState = this.state;
+        this.enterState('world_menu');
+        const targets = this.ui.targets.save();
+        const actions = this.ui.actions.save();
+        const close = () => {
+            this.ui.targets.restore(targets);
+            this.ui.actions.restore(actions);
+            this.enterState(prevState);
+        };
+        const items = room.things.filter((thing) => thing.use != null).map((thing) => {
+            if (thing.use == null) {
+                throw new Error(`Assertion error, ineffective filter.`);
+            }
+            const use = thing.use;
+            return {
+                text: thing.name,
+                action: () => {
+                    close();
+                    this.doGameAction(use());
+                },
+            };
+        });
+        this.ui.targets.reset();
+        this.ui.actions.setList(items, close);
     }
-    narrate(narration) {
-        if (narration instanceof Scene) {
-            while (this.activeScene != null) {
-                this.progressScene();
+    doWorldOpenTakeMenu() {
+        const room = this.getCurrentRoom();
+        const prevState = this.state;
+        this.enterState('world_menu');
+        const targets = this.ui.targets.save();
+        const actions = this.ui.actions.save();
+        const close = () => {
+            this.ui.targets.restore(targets);
+            this.ui.actions.restore(actions);
+            this.enterState(prevState);
+        };
+        const items = room.things.filter((thing) => thing.take != null).map((thing) => {
+            if (thing.take == null) {
+                throw new Error(`Assertion error, ineffective filter.`);
             }
-            this.activeScene = narration;
-            this.progressScene();
+            const take = thing.take;
+            return {
+                text: thing.name,
+                action: () => {
+                    close();
+                    this.doGameAction(take());
+                },
+            };
+        });
+        this.ui.targets.reset();
+        this.ui.actions.setList(items, close);
+    }
+    doGameAction(action) {
+        if (action.updated != null && action.updated) {
+            this.updateWorldButtons();
         }
-        else if (Array.isArray(narration)) {
-            for (const stanza of narration) {
-                this.write(stanza);
+        if (action.receiveItems != null) {
+            for (const item of action.receiveItems) {
+                this.ui.narration.append(`You receive ${item.name}.`);
+                this.player.items.push(item);
             }
+            this.updateWorldButtons();
         }
-        else {
-            this.write(narration);
+        if (action.narration != null) {
+            this.ui.narration.append(action.narration);
+        }
+        if (action.scene != null) {
+            this.runScene(action.scene);
+        }
+        if (action.battle != null) {
+            this.enterBattle(action.battle);
         }
     }
-    progressScene() {
-        if (this.activeScene != null) {
-            if (this.activeScene.hasMore()) {
-                this.write(this.activeScene.next());
+    doGameOver() {
+        this.enterState('game_over');
+        const blank = { text: '', action: () => { } };
+        this.ui.narration.append(`Game over.`);
+        this.ui.targets.reset();
+        this.ui.actions.setActions([
+            blank, blank, blank,
+            blank,
+            {
+                text: 'Continue',
+                action: () => {
+                    this.start();
+                },
+            },
+        ]);
+    }
+    doStateWorld() {
+        const room = this.getCurrentRoom();
+        if (room.tick != null) {
+            const action = room.tick();
+            if (action != null) {
+                this.doGameAction(action);
             }
-            if (!this.activeScene.hasMore()) {
-                this.activeScene = null;
-            }
-            this.updateActions(/*resetPage=*/ true);
         }
     }
-    doEquip(item) {
-        const keepItems = [];
-        let claimed = false;
-        for (const itemNo of this.state.player.items) {
-            if (!claimed && itemNo == item.itemNo) {
-                claimed = true;
-            }
-            else {
-                keepItems.push(itemNo);
-            }
+    doStateBattle() {
+        if (this.battle == null) {
+            throw new Error(`Assertion error, battle is null!`);
         }
-        let dupe = false;
-        if (claimed && item.equipmentStats?.singletonCategory) {
-            for (const itemNo of this.state.player.equipment) {
-                const equip = world.getItem(itemNo);
-                if (equip && equip.equipmentStats?.singletonCategory
-                    && equip.equipmentStats?.singletonCategory == item.equipmentStats.singletonCategory) {
-                    dupe = true;
-                }
-            }
-        }
-        let full = claimed && this.state.player.equipment.length >= 3;
-        if (full) {
-            this.narrate(strings.buttonGrid.itemEquipFull);
-        }
-        else if (dupe) {
-            this.narrate(strings.buttonGrid.itemEquipDupe);
-        }
-        else if (claimed) {
-            this.narrate(strings.buttonGrid.itemEquipSuccess);
-            this.state.player.equipment.push(item.itemNo);
-            this.state.player.items = keepItems;
-        }
-        this.updateActions(/*resetPage=*/ true);
+        this.battle.tick();
     }
-    doUnequip(item) {
-        const keepEquipment = [];
-        let claimed = false;
-        for (const itemNo of this.state.player.equipment) {
-            if (!claimed && itemNo == item.itemNo) {
-                claimed = true;
-            }
-            else {
-                keepEquipment.push(itemNo);
-            }
+    doWorldScore() {
+        const nextLevel = getPlayerLevelEntry(this.player.level + 1);
+        let levelSaying = `You are at the maximum level.`;
+        if (nextLevel != null) {
+            levelSaying = `You require ${nextLevel.exp - this.player.exp} EXP to reach the next level.`;
         }
-        if (claimed) {
-            this.state.player.equipment = keepEquipment;
-            this.state.player.items.push(item.itemNo);
-        }
-        this.updateActions(/*resetPage=*/ true);
-    }
-    doLook() {
-        const room = this.getPlayerRoom();
-        const description = this.getRoomDescription(room);
-        this.narrate(description);
-    }
-    doTakeExit(exit) {
-        if (typeof exit.toRoomNo === 'number') {
-            this.state.player.roomNo = exit.toRoomNo;
-        }
-        this.narrate(exit.useNarration.get(lang.langID));
-        this.updateActions(/*resetPage=*/ true);
-    }
-    doAction(action) {
-        if (typeof action === 'function') {
-            const result = action(this.state);
-            if (typeof result === 'string') {
-                this.narrate(result);
-            }
-            else if (result) {
-                // TODO: Why can I pass just result without a type error?
-                this.narrate(result.get(lang.langID));
-            }
-        }
-        this.updateActions(/*resetPage=*/ true);
+        this.ui.narration.append(`You are level ${this.player.level}. ${levelSaying}`);
+        this.ui.narration.append(`HP ${this.player.resources.hp}/${this.player.hp} `
+            + `MP ${this.player.resources.mp}/${this.player.mp} `
+            + `PP ${this.player.resources.pp}/${this.player.pp}`);
+        this.ui.narration.append(`OFF ${this.player.off} `
+            + `DEF ${this.player.def} `
+            + `PSY ${this.player.psy}`);
+        this.ui.narration.append(`DMG PHY ${this.player.dmgphy} `
+            + `ELE ${this.player.dmgele} `
+            + `MYS ${this.player.dmgmys} `
+            + `PSY ${this.player.dmgpsy}`);
+        this.ui.narration.append(`RES PHY ${this.player.resphy} `
+            + `ELE ${this.player.resele} `
+            + `MYS ${this.player.resmys} `
+            + `PSY ${this.player.respsy}`);
     }
 }
