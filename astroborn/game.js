@@ -202,19 +202,28 @@ export class Game {
                     this.player.level += 1;
                     // LEVEL UP
                     // TODO: how to make missing things a type error?
+                    let earnHP = 0;
+                    let earnMP = 0;
+                    let earnPP = 0;
                     this.ui.narration.append(`Your level has increased to ${this.player.level}!`);
                     if (nextLevel.hp != this.player.base.hp) {
-                        this.ui.narration.append(`HP has increased by ${nextLevel.hp - this.player.base.hp}!`);
+                        earnHP = nextLevel.hp - this.player.base.hp;
+                        this.ui.narration.append(`HP has increased by ${earnHP}!`);
                     }
                     this.player.base.hp = nextLevel.hp;
+                    this.player.resources.hp = Math.min(this.player.hp, this.player.resources.hp + earnHP); // Could be better if done after playerCalculate() along with mp and pp.
                     if (nextLevel.mp != this.player.base.mp) {
-                        this.ui.narration.append(`MP has increased by ${nextLevel.mp - this.player.base.mp}!`);
+                        earnMP = nextLevel.mp - this.player.base.mp;
+                        this.ui.narration.append(`MP has increased by ${earnMP}!`);
                     }
                     this.player.base.mp = nextLevel.mp;
+                    this.player.resources.mp = Math.min(this.player.mp, this.player.resources.mp + earnMP);
                     if (nextLevel.pp != this.player.base.pp) {
-                        this.ui.narration.append(`PP has increased by ${nextLevel.pp - this.player.base.pp}!`);
+                        earnPP = nextLevel.pp - this.player.base.pp;
+                        this.ui.narration.append(`PP has increased by ${earnPP}!`);
                     }
                     this.player.base.pp = nextLevel.pp;
+                    this.player.resources.pp = Math.min(this.player.pp, this.player.resources.pp + earnPP);
                     if (nextLevel.off != this.player.base.off) {
                         this.ui.narration.append(`OFF has increased by ${nextLevel.off - this.player.base.off}!`);
                     }
@@ -234,6 +243,7 @@ export class Game {
                     this.doGameAction(this.battle.winAction());
                 }
                 this.player.resources.hp = Math.max(1, this.player.resources.hp); // TODO: Hackish, need to keep 1 hp to keep alive.
+                this.updateResources();
             }
             else if (result == 'lose') {
                 if (this.battle.loseAction) {
@@ -282,6 +292,10 @@ export class Game {
             {
                 text: 'Use...',
                 action: () => this.doWorldOpenUseMenu(),
+            },
+            {
+                text: 'Talk...',
+                action: () => this.doWorldOpenTalkMenu(),
             },
             {
                 text: 'Take...',
@@ -345,7 +359,13 @@ export class Game {
     */
     doWorldLook() {
         const room = this.getCurrentRoom();
-        this.ui.narration.append(room.description);
+        let description = room.description;
+        for (const thing of room.things) {
+            if (thing.isHereDescription != null) {
+                description += ' ' + thing.isHereDescription;
+            }
+        }
+        this.ui.narration.append(description);
     }
     doWorldTakeExit(exit) {
         this.ui.narration.append(exit.goNarration);
@@ -353,6 +373,18 @@ export class Game {
             this.roomNo = exit.roomNo;
             this.progress.clearEphemeral();
             this.updateWorldButtons();
+            // start battle
+            const room = this.getCurrentRoom();
+            if (room.battle != null) {
+                const result = room.battle();
+                if (result != null && result.battle != null) {
+                    // This narration instead of the one from the battle initiation.
+                    if (result.narration == null) {
+                        this.ui.narration.append(`You start to fight!`);
+                    }
+                    this.doGameAction({ narration: result.narration, battle: result.battle });
+                }
+            }
         }
     }
     doWorldOpenLookAtMenu() {
@@ -399,6 +431,55 @@ export class Game {
                 action: () => {
                     close();
                     this.doGameAction(use());
+                },
+            };
+        });
+        this.ui.targets.reset();
+        this.ui.actions.setList(items, close);
+    }
+    doWorldOpenTalkMenu() {
+        const room = this.getCurrentRoom();
+        const prevState = this.state;
+        this.enterState('world_menu');
+        const targets = this.ui.targets.save();
+        const actions = this.ui.actions.save();
+        const close = () => {
+            this.ui.targets.restore(targets);
+            this.ui.actions.restore(actions);
+            this.enterState(prevState);
+        };
+        const items = room.things.filter((thing) => thing.talk != null).map((thing) => {
+            if (thing.talk == null) {
+                throw new Error(`Assertion error, ineffective filter.`);
+            }
+            const talk = thing.talk;
+            return {
+                text: thing.name,
+                action: () => {
+                    this.doWorldOpenTalkSubMenu(talk, close);
+                },
+            };
+        });
+        this.ui.targets.reset();
+        this.ui.actions.setList(items, close);
+    }
+    doWorldOpenTalkSubMenu(talk, parentClose) {
+        const prevState = this.state;
+        this.enterState('world_menu');
+        const targets = this.ui.targets.save();
+        const actions = this.ui.actions.save();
+        const close = () => {
+            this.ui.targets.restore(targets);
+            this.ui.actions.restore(actions);
+            this.enterState(prevState);
+        };
+        const items = talk.map((t) => {
+            return {
+                text: t.topic,
+                action: () => {
+                    const a = t.action();
+                    parentClose(); // TODO: Must close the menu before the scene will go, but that shouldn't be how it need to be.
+                    this.doGameAction(a);
                 },
             };
         });

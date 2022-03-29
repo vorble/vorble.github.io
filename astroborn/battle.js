@@ -10,7 +10,7 @@ function dedupeNames(things) {
     for (const thing of things) {
         const multiplicity = (seen.get(thing.name) || 0) + 1;
         seen.set(thing.name, multiplicity);
-        if (multiplicity >= 1) {
+        if (multiplicity > 1) {
             dupes.add(thing.name);
         }
     }
@@ -120,7 +120,6 @@ function calculateBattleDamageBase(a, d) {
     const psy = calculateBattleDamagePsychic(a, d);
     return { phy, ele, mys, psy, total: phy + ele + mys + psy };
 }
-// TODO: Need to make space for attack power when in each kind of position.
 function lookupPA(round) {
     return round.attacker.attack.powerAgainst[round.defender.position];
 }
@@ -265,13 +264,23 @@ export class Battle {
         const detail = this.game.DEBUG_BATTLE ? ' ' + JSON.stringify(damage).replace(/:/g, ': ') : '';
         let message = '';
         if (damage.special == null) {
-            message = `${mob.name} attacks and delivers ${damage.effective} damage${detail}!`;
+            if (mob.nextAttack && mob.nextAttack.specialNarrationDo) {
+                message = `${mob.nextAttack.specialNarrationDo} You receive ${damage.effective} damage${detail}!`;
+            }
+            else {
+                message = `${mob.name} attacks and delivers ${damage.effective} damage${detail}!`;
+            }
         }
         else if (damage.special == 'noact') {
             message = `${mob.name} is unable to attack in its current position${detail}!`;
         }
         else if (damage.special == 'miss') {
-            message = `${mob.name} fails to hit you${detail}!`;
+            if (mob.nextAttack && mob.nextAttack.specialNarrationDo) {
+                message = `${mob.nextAttack.specialNarrationDo} ${mob.name} fails to hit you${detail}!`;
+            }
+            else {
+                message = `${mob.name} fails to hit you${detail}!`;
+            }
         }
         else {
             throw new Error(`Assertion error, unhandled special ${damage.special}.`); // TODO How to make this a type error?
